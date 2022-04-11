@@ -1,6 +1,6 @@
 # model settings
 model = dict(
-    type='FasterRCNNHBBOBB',
+    type='FasterRCNNOBB',
     pretrained='modelzoo://resnet50',
     backbone=dict(
         type='ResNet',
@@ -32,38 +32,19 @@ model = dict(
         out_channels=256,
         featmap_strides=[4, 8, 16, 32]),
     bbox_head=dict(
-        type='SharedFCBBoxHead',
-        num_fcs=2,
-        in_channels=256,
-        fc_out_channels=1024,
-        roi_feat_size=7,
-        num_classes=16,
-        target_means=[0., 0., 0., 0.],
-        target_stds=[0.1, 0.1, 0.2, 0.2],
-        reg_class_agnostic=False,
-        loss_cls=dict(
-            type='CrossEntropyLoss', use_sigmoid=False, loss_weight=1.0),
-        loss_bbox=dict(type='SmoothL1Loss', beta=1.0, loss_weight=1.0)),
-    rbbox_roi_extractor=dict(
-        type='SingleRoIExtractor',
-        roi_layer=dict(type='RoIAlign', out_size=7, sample_num=2),
-        out_channels=256,
-        featmap_strides=[4, 8, 16, 32]),
-    rbbox_head=dict(
         type='SharedFCBBoxHeadRbbox',
         num_fcs=2,
         in_channels=256,
         fc_out_channels=1024,
         roi_feat_size=7,
-        num_classes=16,
+        num_classes=6,
         target_means=[0., 0., 0., 0., 0.],
         target_stds=[0.1, 0.1, 0.2, 0.2, 0.1],
         reg_class_agnostic=False,
         with_module=False,
         loss_cls=dict(
             type='CrossEntropyLoss', use_sigmoid=False, loss_weight=1.0),
-        loss_bbox=dict(type='SmoothL1Loss', beta=1.0, loss_weight=1.0))
-)
+        loss_bbox=dict(type='SmoothL1Loss', beta=1.0, loss_weight=1.0)))
 # model training and testing settings
 train_cfg = dict(
     rpn=dict(
@@ -113,19 +94,15 @@ test_cfg = dict(
         nms_thr=0.7,
         min_bbox_size=0),
     rcnn=dict(
-        # score_thr=0.05, nms=dict(type='nms', iou_thr=0.5), max_per_img=1000),
-        score_thr=0.05, nms=dict(type='nms', iou_thr=0.5), max_per_img=2000),
-    rrcnn=dict(
-        # score_thr=0.0001, nms=dict(type='py_cpu_nms_poly_fast', iou_thr=0.9), max_per_img=1000)
-        # score_thr = 0.0001, nms = dict(type='py_cpu_nms_poly_fast', iou_thr=0.9), max_per_img = 2000)
-        score_thr=0.05, nms=dict(type='pesudo_nms_poly', iou_thr=0.9), max_per_img=2000)
-
-    # soft-nms is also supported for rcnn testing
+        # score_thr=0.05, nms=dict(type='py_cpu_nms_poly_fast', iou_thr=0.1), max_per_img=1000)
+        score_thr = 0.05, nms = dict(type='py_cpu_nms_poly_fast', iou_thr=0.1), max_per_img = 2000)
+# soft-nms is also supported for rcnn testing
     # e.g., nms=dict(type='soft_nms', iou_thr=0.5, min_score=0.05)
 )
 # dataset settings
-dataset_type = 'DOTADataset'
-data_root = 'data/dota1_1024/'
+tile_side_len = 1000
+dataset_type = 'DOTA1_5Dataset_v2'
+data_root = f'gaofen_data/fair1_{tile_side_len}/'
 img_norm_cfg = dict(
     mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
 data = dict(
@@ -133,9 +110,9 @@ data = dict(
     workers_per_gpu=2,
     train=dict(
         type=dataset_type,
-        ann_file=data_root + 'trainval1024/DOTA_trainval1024.json',
-        img_prefix=data_root + 'trainval1024/images/',
-        img_scale=(1024, 1024),
+        ann_file=data_root + f'train{tile_side_len}/train{tile_side_len}_5classes.json',
+        img_prefix=data_root + f'train{tile_side_len}/images/',
+        img_scale=(tile_side_len, tile_side_len),
         img_norm_cfg=img_norm_cfg,
         size_divisor=32,
         flip_ratio=0.5,
@@ -144,9 +121,9 @@ data = dict(
         with_label=True),
     val=dict(
         type=dataset_type,
-        ann_file=data_root + 'trainval1024/DOTA_trainval1024.json',
-        img_prefix=data_root + 'trainval1024/images',
-        img_scale=(1024, 1024),
+        ann_file=data_root + f'val_small_set{tile_side_len}/val{tile_side_len}_5classes.json',
+        img_prefix=data_root + f'val_small_set{tile_side_len}/images/',
+        img_scale=(tile_side_len, tile_side_len),
         img_norm_cfg=img_norm_cfg,
         size_divisor=32,
         flip_ratio=0,
@@ -155,9 +132,9 @@ data = dict(
         with_label=True),
     test=dict(
         type=dataset_type,
-        ann_file=data_root + 'test1024/DOTA_test1024.json',
-        img_prefix=data_root + 'test1024/images',
-        img_scale=(1024, 1024),
+        ann_file=data_root + f'val{tile_side_len}/val{tile_side_len}_5classes.json',
+        img_prefix=data_root + f'val{tile_side_len}/images',
+        img_scale=(tile_side_len, tile_side_len),
         img_norm_cfg=img_norm_cfg,
         size_divisor=32,
         flip_ratio=0,
@@ -174,7 +151,7 @@ lr_config = dict(
     warmup_iters=500,
     warmup_ratio=1.0 / 3,
     step=[8, 11])
-checkpoint_config = dict(interval=12)
+checkpoint_config = dict(interval=1)
 # yapf:disable
 log_config = dict(
     interval=50,
@@ -187,7 +164,7 @@ log_config = dict(
 total_epochs = 12
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
-work_dir = './work_dirs/faster_rcnn_h-obb_r50_fpn_1x_dota'
+work_dir = './work_dirs/faster_rcnn_obb_r50_fpn_1x_fair1m_5classes_correct'
 load_from = None
 resume_from = None
 workflow = [('train', 1)]

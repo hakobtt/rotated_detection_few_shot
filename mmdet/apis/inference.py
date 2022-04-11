@@ -142,7 +142,7 @@ def show_result(img, result, class_names, score_thr=0.3, out_file=None):
         show=out_file is None,
         out_file=out_file)
 
-def draw_poly_detections(img, detections, class_names, scale, threshold=0.2, putText=False,showStart=False, colormap=None):
+def draw_poly_detections(img, detections, class_names, scale, threshold=0.2, putText=True,showStart=False, colormap=None):
     """
 
     :param img:
@@ -164,7 +164,7 @@ def draw_poly_detections(img, detections, class_names, scale, threshold=0.2, put
         if colormap is None:
             color = (random.randint(0, 256), random.randint(0, 256), random.randint(0, 256))
         else:
-            color = colormap[j]
+            color = colormap[j%len(colormap)]
         try:
             dets = detections[j]
         except:
@@ -185,3 +185,19 @@ def draw_poly_detections(img, detections, class_names, scale, threshold=0.2, put
                             color=color_white, fontFace=cv2.FONT_HERSHEY_COMPLEX, fontScale=0.5)
     return img
 
+
+
+#  Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.399
+#  Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.735
+#  Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=100 ] = 0.369
+#  Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.273
+#  Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.378
+#  Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.432
+#  Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=  1 ] = 0.128
+#  Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets= 10 ] = 0.365
+#  Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.470
+#  Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.332
+#  Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.439
+#  Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.473
+#
+# Process finished with exit code 0

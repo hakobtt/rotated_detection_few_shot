@@ -26,8 +26,39 @@ def coco_eval(result_file, result_types, coco, max_dets=(100, 300, 1000)):
     coco_dets = coco.loadRes(result_file)
 
     img_ids = coco.getImgIds()
+    import os
+    import cv2
+    import random
+    data_root_dir = "/mnt/data/datasets/gaofen/FAIR1M2.0/fair1_1000/val_small_set1000/images"
+    # cats = coco_dets.cats
+    cats = coco.cats
+    show = False
+    if show:
+        for img_id in img_ids[::]:
+            info = coco.loadImgs([img_id])[0]
+
+            img_path = os.path.join(data_root_dir, info['file_name'])
+
+            ann_ids = coco.getAnnIds([img_id])
+            anns = coco.loadAnns(ann_ids)
+            img = cv2.imread(img_path)
+            for ann in anns:
+                bbox = ann['bbox']
+                x, y = int(bbox[0]), int(bbox[1])
+                pts = np.array(ann['segmentation'], np.int32).reshape((4, 2))
+                pts = pts.reshape((-1, 1, 2))
+                cv2.polylines(img, [pts], True, [255, 255, 0], 2)
+                text = str(cats[ann['category_id']]['name'])
+
+                cv2.putText(img, text, (x, y),
+                            cv2.QT_FONT_NORMAL, 0.5, (128, 128, 255))
+            cv2.imshow('img', img)
+            if cv2.waitKey(0) == 27:
+                exit()
+
     for res_type in result_types:
         iou_type = 'bbox' if res_type == 'proposal' else res_type
+
         cocoEval = COCOeval(coco, coco_dets, iou_type)
         cocoEval.params.imgIds = img_ids
         if res_type == 'proposal':
@@ -48,7 +79,7 @@ def fast_eval_recall(results,
     elif not isinstance(results, list):
         raise TypeError(
             'results must be a list of numpy arrays or a filename, not {}'.
-            format(type(results)))
+                format(type(results)))
 
     gt_bboxes = []
     img_ids = coco.getImgIds()
@@ -82,6 +113,19 @@ def xyxy2xywh(bbox):
         _bbox[1],
         _bbox[2] - _bbox[0] + 1,
         _bbox[3] - _bbox[1] + 1,
+    ]
+
+
+def segm_to_xywh(segm):
+    min_x = np.min(segm[0::2])
+    min_y = np.min(segm[1::2])
+    max_x = np.max(segm[0::2])
+    max_y = np.max(segm[1::2])
+    return [
+        min_x,
+        min_y,
+        max_x - min_x,
+        max_y - min_y,
     ]
 
 
@@ -119,31 +163,33 @@ def det2json(dataset, results):
 
 def segm2json(dataset, results):
     json_results = []
+
     for idx in range(len(dataset)):
         img_id = dataset.img_ids[idx]
-        det, seg = results[idx]
-        for label in range(len(det)):
-            bboxes = det[label]
-            segms = seg[label]
-            for i in range(bboxes.shape[0]):
+        dets = results[idx]
+        for label in range(len(dets)):
+            det_data = dets[label]
+
+            for i in range(det_data.shape[0]):
                 data = dict()
                 data['image_id'] = img_id
-                data['bbox'] = xyxy2xywh(bboxes[i])
-                data['score'] = float(bboxes[i][4])
+                data['bbox'] = segm_to_xywh(det_data[i][:-1])
+                data['score'] = float(det_data[i][-1])
                 data['category_id'] = dataset.cat_ids[label]
-                segms[i]['counts'] = segms[i]['counts'].decode()
-                data['segmentation'] = segms[i]
+                # segms[i]['counts'] = segms[i]['counts'].decode()
+                data['segmentation'] = [det_data[i].tolist()[:-1]]
                 json_results.append(data)
     return json_results
 
 
 def results2json(dataset, results, out_file):
-    if isinstance(results[0], list):
-        json_results = det2json(dataset, results)
-    elif isinstance(results[0], tuple):
-        json_results = segm2json(dataset, results)
-    elif isinstance(results[0], np.ndarray):
-        json_results = proposal2json(dataset, results)
-    else:
-        raise TypeError('invalid type of results')
+    json_results = segm2json(dataset, results)
+    # if isinstance(results[0], list):
+    #     json_results = det2json(dataset, results)
+    # elif isinstance(results[0], tuple):
+    #     json_results = segm2json(dataset, results)
+    # elif isinstance(results[0], np.ndarray):
+    #     json_results = proposal2json(dataset, results)
+    # else:
+    #     raise TypeError('invalid type of results')
     mmcv.dump(json_results, out_file)

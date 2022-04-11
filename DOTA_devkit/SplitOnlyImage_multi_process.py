@@ -41,7 +41,7 @@ class splitbase():
             cv2.imwrite(outdir, subimg)
 
     def SplitSingle(self, name, rate, extent):
-        img = cv2.imread(os.path.join(self.srcpath, name + extent))
+        img = cv2.imread(os.path.join(self.srcpath, name + ".tif"))
         assert np.shape(img) != ()
 
         if (rate != 1):

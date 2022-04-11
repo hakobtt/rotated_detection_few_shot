@@ -114,3 +114,6 @@ trash/
 
 experiments
 work_dirs
+/gaofen_data/
+/checkpoints/
+/gaofen_data/

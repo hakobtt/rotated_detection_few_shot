@@ -12,16 +12,24 @@ class DOTA1_5Dataset(CocoDataset):
                 'harbor', 'swimming-pool',
                 'helicopter', 'container-crane')
 
+
+class_names = ["Boeing737", "Boeing777", "Boeing747", "Boeing787", "A320", "A220", "A330",
+               "A350", "A321",
+               "C919", "ARJ21", "other-airplane", "Passenger Ship", "motorboat", "fishing boat", "tugboat",
+               "engineering ship", "liquid cargo ship", "Dry Cargo Ship", "warship", "other-ship", "small car", "bus",
+               "cargo truck",
+               "dump truck", "van", "trailer", "tractor", "truck tractor", "excavator", "other-vehicle",
+               "baseball field",
+               "basketball court", "football field", "tennis court", "roundabout", "intersection", "bridge"
+
+               ]
+
+
+class_names = [c.lower() for c in class_names]
+
 class DOTA1_5Dataset_v2(CocoDataset):
     # Note! same with DOTA2_v3
-    CLASSES = ('plane', 'baseball-diamond',
-                'bridge', 'ground-track-field',
-                'small-vehicle', 'large-vehicle',
-                'ship', 'tennis-court',
-                'basketball-court', 'storage-tank',
-                'soccer-ball-field', 'roundabout',
-                'harbor', 'swimming-pool',
-                'helicopter', 'container-crane')
+    CLASSES = class_names
 
     def _parse_ann_info(self, ann_info, with_mask=True):
         """Parse bbox and mask annotation.

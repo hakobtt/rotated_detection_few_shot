@@ -87,7 +87,16 @@ class DetectorModel():
         self.cfg = Config.fromfile(self.config_file)
         self.data_test = self.cfg.data['test']
         self.dataset = get_dataset(self.data_test)
-        self.classnames = self.dataset.CLASSES
+        # self.classnames = ["Boeing737", "Boeing777", "Boeing747", "Boeing787", "A320", "A220", "A330",
+        #        "A350", "A321",
+        #        "C919", "ARJ21", "other-airplane", "Passenger Ship", "motorboat", "fishing boat", "tugboat",
+        #        "engineering ship", "liquid cargo ship", "Dry Cargo Ship", "warship", "other-ship", "small car", "bus",
+        #        "cargo truck",
+        #        "dump truck", "van", "trailer", "tractor", "truck tractor", "excavator", "other-vehicle",
+        #        "baseball field",
+        #        "basketball court", "football field", "tennis court", "roundabout", "intersection", "bridge"
+        #        ]
+        self.classnames = ["airplane", "ship", "vehicle", "court", "road"]
         self.model = init_detector(config_file, checkpoint_file, device='cuda:0')
 
     def inference_single(self, imagname, slide_size, chip_size):
@@ -97,50 +106,54 @@ class DetectorModel():
         hn, wn = chip_size
         # TODO: check the corner case
         # import pdb; pdb.set_trace()
-        total_detections = [np.zeros((0, 9)) for _ in range(len(self.classnames))]
+        # total_detections = [np.zeros((0, 9)) for _ in range(len(self.classnames))]
+        total_detections = inference_detector(self.model, img)
+        # for cls_id, name in enumerate(self.classnames):
+        #     total_detections[cls_id] = chip_detections[cls_id]
 
-        for i in tqdm(range(int(width / slide_w + 1))):
-            for j in range(int(height / slide_h) + 1):
-                subimg = np.zeros((hn, wn, channel))
-                # print('i: ', i, 'j: ', j)
-                chip = img[j * slide_h:j * slide_h + hn, i * slide_w:i * slide_w + wn, :3]
-                subimg[:chip.shape[0], :chip.shape[1], :] = chip
-
-                chip_detections = inference_detector(self.model, subimg)
-
-                # print('result: ', result)
-                for cls_id, name in enumerate(self.classnames):
-                    chip_detections[cls_id][:, :8][:, ::2] = chip_detections[cls_id][:, :8][:, ::2] + i * slide_w
-                    chip_detections[cls_id][:, :8][:, 1::2] = chip_detections[cls_id][:, :8][:, 1::2] + j * slide_h
-                    # import pdb;pdb.set_trace()
-                    try:
-                        total_detections[cls_id] = np.concatenate((total_detections[cls_id], chip_detections[cls_id]))
-                    except:
-                        import pdb;
-                        pdb.set_trace()
+        # for i in tqdm(range(int(width / slide_w + 1))):
+        #     for j in range(int(height / slide_h) + 1):
+        #         subimg = np.zeros((hn, wn, channel))
+        #         # print('i: ', i, 'j: ', j)
+        #         chip = img[j * slide_h:j * slide_h + hn, i * slide_w:i * slide_w + wn, :3]
+        #         subimg[:chip.shape[0], :chip.shape[1], :] = chip
+        #
+        #         chip_detections = inference_detector(self.model, subimg)
+        #
+        #         # print('result: ', result)
+        #         for cls_id, name in enumerate(self.classnames):
+        #             chip_detections[cls_id][:, :8][:, ::2] = chip_detections[cls_id][:, :8][:, ::2] + i * slide_w
+        #             chip_detections[cls_id][:, :8][:, 1::2] = chip_detections[cls_id][:, :8][:, 1::2] + j * slide_h
+        #             # import pdb;pdb.set_trace()
+        #             try:
+        #                 total_detections[cls_id] = np.concatenate((total_detections[cls_id], chip_detections[cls_id]))
+        #             except:
+        #                 import pdb;
+        #                 pdb.set_trace()
         # nms
         for i in range(len(self.classnames)):
             keep = py_cpu_nms_poly_fast_np(total_detections[i], 0.1)
-            total_detections[i] = total_detections[i][keep]
+            # total_detections[i] = total_detections[i][keep]
         return total_detections
 
     def inference_single_vis(self, srcpath, dstpath, slide_size, chip_size):
         detections = self.inference_single(srcpath, slide_size, chip_size)
         img = draw_poly_detections(srcpath, detections, self.classnames, scale=1, threshold=0.2,
                                    colormap=dota15_colormap)
-        cv2.imwrite(dstpath, img)
+        cv2.imshow("aa", img)
+        cv2.waitKey(0)
 
 
 if __name__ == '__main__':
     model = DetectorModel(
-        r"configs/ReDet/ReDet_re50_refpn_1x_dota15_ms.py",
-        r"work_dirs/ReDet_re50_refpn_1x_dota15_ms/ReDet_re50_refpn_1x_dota15_ms-9d1a523c.pth")
+        r"configs/DOTA1_5/faster_rcnn_obb_r50_fpn_1x_fair1m.py",
+        r"work_dirs/faster_rcnn_obb_r50_fpn_1x_fair1m_5classes/epoch_12.pth")
 
-    img_dir = "your_path_to_img_dir"
-    out_dir = 'your_path_to_save_results'
+    img_dir = "/mnt/data/datasets/gaofen/FAIR1M2.0/fair1_1000/val1000/images"
+    out_dir = './output'
     img_names = os.listdir(img_dir)
     for img_name in img_names:
         print(img_name)
         img_path = os.path.join(img_dir, img_name)
         out_path = os.path.join(out_dir, img_name)
-        model.inference_single_vis(img_path, out_path, (1024, 1024), (3072, 3072))
+        model.inference_single_vis(img_path, out_path, (1000, 1000), (1500, 1500))

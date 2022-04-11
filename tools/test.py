@@ -3,6 +3,7 @@ import os.path as osp
 import shutil
 import tempfile
 
+import cv2
 import mmcv
 import torch
 import torch.distributed as dist
@@ -14,11 +15,14 @@ from mmdet.core import results2json, coco_eval
 from mmdet.datasets import build_dataloader, get_dataset
 from mmdet.models import build_detector
 import time
+import numpy as np
 
 def get_time_str():
     return time.strftime('%Y%m%d_%H%M%S', time.localtime())
 
-def single_gpu_test(model, data_loader, show=False, log_dir=None):
+from mmdet.apis import init_detector, inference_detector, draw_poly_detections
+
+def single_gpu_test(model, data_loader, show=True, log_dir=None):
     model.eval()
     results = []
     dataset = data_loader.dataset
@@ -31,8 +35,17 @@ def single_gpu_test(model, data_loader, show=False, log_dir=None):
         prog_bar = mmcv.ProgressBar(len(dataset))
     for i, data in enumerate(data_loader):
         with torch.no_grad():
-            result = model(return_loss=False, rescale=not show, **data)
+            result = model(return_loss=False, rescale=True, **data)
         results.append(result)
+        # std = torch.tensor([58.395, 57.12, 57.375])
+        # mean = torch.tensor([123.675, 116.28, 103.53])
+        # img =data["img"][0][0].permute((1,2,0))
+        # img = img* std + mean
+        # img = img.detach().cpu().numpy().astype(np.uint8).copy()
+        # img = draw_poly_detections(img, result, ["airplane", "ship", "vehicle", "court", "road"], scale=1, threshold=0.2,
+        #                            )
+        # cv2.imshow("img", img)
+        # cv2.waitKey(0)
 
         if show:
             model.module.show_result(data, result, dataset.img_norm_cfg)
@@ -73,7 +86,7 @@ def collect_results(result_part, size, tmpdir=None):
     if tmpdir is None:
         MAX_LEN = 512
         # 32 is whitespace
-        dir_tensor = torch.full((MAX_LEN, ),
+        dir_tensor = torch.full((MAX_LEN,),
                                 32,
                                 dtype=torch.uint8,
                                 device='cuda')
@@ -172,10 +185,10 @@ def main():
         model.CLASSES = checkpoint['meta']['CLASSES']
     else:
         model.CLASSES = dataset.CLASSES
-
+    model.CLASSES = ["airplane", "ship", "vehicle", "court", "road"]
     if not distributed:
         model = MMDataParallel(model, device_ids=[0])
-        outputs = single_gpu_test(model, data_loader, args.show, args.log_dir)
+        outputs = single_gpu_test(model, data_loader, False, args.log_dir)
     else:
         model = MMDistributedDataParallel(model.cuda())
         outputs = multi_gpu_test(model, data_loader, args.tmpdir)

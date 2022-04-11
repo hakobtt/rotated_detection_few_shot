@@ -1,6 +1,6 @@
 Cython
 numpy
-mmcv==0.2.13
+mmcv
 shapely
 tqdm
 matplotlib
