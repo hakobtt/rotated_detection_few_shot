@@ -28,9 +28,13 @@ def DOTA2COCOTrain(srcpath, destfile, class_map: dict, class_names, difficult='2
     data_dict['images'] = []
     data_dict['categories'] = []
     data_dict['annotations'] = []
+    used = set()
     for sub_cat_name, cat_name in class_map.items():
-        single_cat = {'id': class_names.index(cat_name) + 1, 'name': cat_name, 'supercategory': cat_name}
-        data_dict['categories'].append(single_cat)
+        cat_id = class_names.index(cat_name) + 1
+        if cat_id not in used:
+            single_cat = {'id': cat_id, 'name': cat_name, 'supercategory': cat_name}
+            data_dict['categories'].append(single_cat)
+        used.add(cat_id)
 
     inst_count = 1
     image_id = 1

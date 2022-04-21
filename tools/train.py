@@ -1,15 +1,19 @@
+
 from __future__ import division
 
+from mmdet_custom.models import *
 import argparse
 from mmcv import Config
 
 from mmdet import __version__
-from mmdet.datasets import get_dataset
-from mmdet.apis import (train_detector, init_dist, get_root_logger,
+from mmdet.datasets import build_dataset
+from mmcv.runner import init_dist
+from mmdet.apis import (train_detector, get_root_logger,
                         set_random_seed)
 from mmdet.models import build_detector
 import torch
 
+# from mmdet_custom.datasets import *
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Train a detector')
@@ -72,7 +76,7 @@ def main():
     model = build_detector(
         cfg.model, train_cfg=cfg.train_cfg, test_cfg=cfg.test_cfg)
 
-    train_dataset = get_dataset(cfg.data.train)
+    train_dataset = build_dataset(cfg.data.train)
     if cfg.checkpoint_config is not None:
         # save mmdet version, config file content and class names in
         # checkpoints as meta data

@@ -10,9 +10,9 @@ import torch.distributed as dist
 from mmcv.runner import load_checkpoint, get_dist_info
 from mmcv.parallel import MMDataParallel, MMDistributedDataParallel
 
-from mmdet.apis import init_dist
-from mmdet.core import results2json, coco_eval
-from mmdet.datasets import build_dataloader, get_dataset
+from mmdet_custom.apis import init_dist
+from mmdet_custom.core import results2json, coco_eval
+from mmdet_custom.datasets import build_dataloader, get_dataset
 from mmdet.models import build_detector
 import time
 import numpy as np
@@ -20,7 +20,7 @@ import numpy as np
 def get_time_str():
     return time.strftime('%Y%m%d_%H%M%S', time.localtime())
 
-from mmdet.apis import init_detector, inference_detector, draw_poly_detections
+
 
 def single_gpu_test(model, data_loader, show=True, log_dir=None):
     model.eval()
@@ -194,6 +194,8 @@ def main():
         outputs = multi_gpu_test(model, data_loader, args.tmpdir)
 
     rank, _ = get_dist_info()
+
+
     if args.out and rank == 0:
         print('\nwriting results to {}'.format(args.out))
         mmcv.dump(outputs, args.out)

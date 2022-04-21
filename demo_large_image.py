@@ -146,8 +146,8 @@ class DetectorModel():
 
 if __name__ == '__main__':
     model = DetectorModel(
-        r"configs/DOTA1_5/faster_rcnn_obb_r50_fpn_1x_fair1m.py",
-        r"work_dirs/faster_rcnn_obb_r50_fpn_1x_fair1m_5classes/epoch_12.pth")
+        r"configs/fair1m/faster_rcnn_obb_r50_fpn_1x_fair1m_few_shot.py",
+        r"work_dirs/faster_rcnn_obb_r50_fpn_1x_fair1m_5classes_few_shot/epoch_35.pth")
 
     img_dir = "/mnt/data/datasets/gaofen/FAIR1M2.0/fair1_1000/val1000/images"
     out_dir = './output'

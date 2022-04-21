@@ -65,7 +65,7 @@ class_names = ["airplane", "ship", "vehicle", "court", "road"]
 def parse_args():
     parser = argparse.ArgumentParser(description='prepare dota1')
     parser.add_argument('--srcpath', default='/home/dingjian/project/dota1_5')
-    parser.add_argument('--dstpath', default=r'/home/dingjian/workfs/dota1_5-split-1024',
+    parser.add_argument('--dstpath', default=r'gaofen_data/fair1_1000',
                         help='prepare data')
     args = parser.parse_args()
 
@@ -161,7 +161,7 @@ def prepare(srcpath, dstpath):
                    difficult='-1')
     DOTA2COCOTrain(trainPath, os.path.join(trainPath, f'train{sub_size}_5classes.json'), class_map, class_names,
                    difficult='-1')
-    DOTA2COCOTest(testPath, os.path.join(testPath, f'test{sub_size}_5classes.json'), class_map, class_names)
+    # DOTA2COCOTest(testPath, os.path.join(testPath, f'test{sub_size}_5classes.json'), class_map, class_names)
 
 
 if __name__ == '__main__':
