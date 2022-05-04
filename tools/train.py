@@ -14,6 +14,9 @@ from mmdet.models import build_detector
 import torch
 
 # from mmdet_custom.datasets import *
+from mmdet_custom.datasets import *
+from mmdet_custom.models import *
+from ssod.models import *
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Train a detector')

@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from mmdet_custom.core import delta2dbbox, multiclass_nms_rbbox, \
-    bbox_target_rbbox, accuracy, rbbox_target_rbbox,\
+    bbox_target_rbbox, accuracy, rbbox_target_rbbox, \
     choose_best_Rroi_batch, delta2dbbox_v2, \
     Pesudomulticlass_nms_rbbox, delta2dbbox_v3, hbb2obb_v2
 from ..builder import build_loss
@@ -102,7 +102,7 @@ class BBoxHeadRbbox(nn.Module):
         # TODO: first get indexs of pos_gt_bboxes, then index from gt_bboxes
         # TODO: refactor it, direct use the gt_rbboxes instead of gt_masks
         pos_assigned_gt_inds = [
-            res.pos_assigned_gt_inds  for res in sampling_results
+            res.pos_assigned_gt_inds for res in sampling_results
         ]
         pos_gt_labels = [res.pos_gt_labels for res in sampling_results]
         reg_classes = 1 if self.reg_class_agnostic else self.num_classes
@@ -121,7 +121,7 @@ class BBoxHeadRbbox(nn.Module):
         return cls_reg_targets
 
     def get_target_rbbox(self, sampling_results, gt_bboxes, gt_labels,
-                   rcnn_train_cfg):
+                         rcnn_train_cfg):
         """
         obb target obb
         :param sampling_results:
@@ -166,7 +166,6 @@ class BBoxHeadRbbox(nn.Module):
             if self.reg_class_agnostic:
                 pos_bbox_pred = bbox_pred.view(bbox_pred.size(0), 5)[pos_inds]
             else:
-
 
                 pos_bbox_pred = bbox_pred.view(bbox_pred.size(0), -1,
                                                5)[pos_inds, labels[pos_inds]]
@@ -215,10 +214,10 @@ class BBoxHeadRbbox(nn.Module):
         if rescale:
             # bboxes /= scale_factor
             # dbboxes[:, :4] /= scale_factor
-            dbboxes[:, 0::5] /= scale_factor
-            dbboxes[:, 1::5] /= scale_factor
-            dbboxes[:, 2::5] /= scale_factor
-            dbboxes[:, 3::5] /= scale_factor
+            dbboxes[:, 0::5] /= torch.tensor(scale_factor)
+            dbboxes[:, 1::5] /= torch.tensor(scale_factor)
+            dbboxes[:, 2::5] /= torch.tensor(scale_factor)
+            dbboxes[:, 3::5] /= torch.tensor(scale_factor)
         # if cfg is None:
         #     c_device = dbboxes.device
         #
@@ -231,20 +230,20 @@ class BBoxHeadRbbox(nn.Module):
         c_device = dbboxes.device
 
         det_bboxes, det_labels = multiclass_nms_rbbox(dbboxes, scores,
-                                                cfg.score_thr, cfg.nms,
-                                                cfg.max_per_img)
+                                                      cfg.score_thr, cfg.nms,
+                                                      cfg.max_per_img)
         # det_bboxes = torch.from_numpy(det_bboxes).to(c_device)
         # det_labels = torch.from_numpy(det_labels).to(c_device)
         return det_bboxes, det_labels
 
     def get_det_rbboxes(self,
-                       rrois,
-                       cls_score,
-                       rbbox_pred,
-                       img_shape,
-                       scale_factor,
-                       rescale=False,
-                       cfg=None):
+                        rrois,
+                        cls_score,
+                        rbbox_pred,
+                        img_shape,
+                        scale_factor,
+                        rescale=False,
+                        cfg=None):
         if isinstance(cls_score, list):
             cls_score = sum(cls_score) / float(len(cls_score))
         scores = F.softmax(cls_score, dim=1) if cls_score is not None else None
@@ -272,8 +271,8 @@ class BBoxHeadRbbox(nn.Module):
             c_device = dbboxes.device
 
             det_bboxes, det_labels = multiclass_nms_rbbox(dbboxes, scores,
-                                                    cfg.score_thr, cfg.nms,
-                                                    cfg.max_per_img)
+                                                          cfg.score_thr, cfg.nms,
+                                                          cfg.max_per_img)
             # det_bboxes = torch.from_numpy(det_bboxes).to(c_device)
             # det_labels = torch.from_numpy(det_labels).to(c_device)
             return det_bboxes, det_labels
@@ -308,7 +307,7 @@ class BBoxHeadRbbox(nn.Module):
             pos_is_gts_ = pos_is_gts[i]
 
             bboxes = self.regress_by_class_rbbox(bboxes_, label_, bbox_pred_,
-                                           img_meta_)
+                                                 img_meta_)
             # filter gt bboxes
             pos_keep = 1 - pos_is_gts_
             keep_inds = pos_is_gts_.new_ones(num_rois)
@@ -343,19 +342,19 @@ class BBoxHeadRbbox(nn.Module):
         if rois.size(1) == 5:
             if self.with_module:
                 new_rois = delta2dbbox(rois, bbox_pred, self.target_means,
-                                  self.target_stds, img_meta['img_shape'])
+                                       self.target_stds, img_meta['img_shape'])
             else:
                 new_rois = delta2dbbox_v3(rois, bbox_pred, self.target_means,
-                                  self.target_stds, img_meta['img_shape'])
+                                          self.target_stds, img_meta['img_shape'])
             # choose best Rroi
             new_rois = choose_best_Rroi_batch(new_rois)
         else:
             if self.with_module:
                 bboxes = delta2dbbox(rois[:, 1:], bbox_pred, self.target_means,
-                                    self.target_stds, img_meta['img_shape'])
+                                     self.target_stds, img_meta['img_shape'])
             else:
                 bboxes = delta2dbbox_v3(rois[:, 1:], bbox_pred, self.target_means,
-                                    self.target_stds, img_meta['img_shape'])
+                                        self.target_stds, img_meta['img_shape'])
             bboxes = choose_best_Rroi_batch(bboxes)
             new_rois = torch.cat((rois[:, [0]], bboxes), dim=1)
 
