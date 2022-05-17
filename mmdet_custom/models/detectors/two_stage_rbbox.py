@@ -1,10 +1,8 @@
 import torch
 import torch.nn as nn
 
-from .base import BaseDetector
+from mmdet.models import BaseDetector
 from .test_mixins import RPNTestMixin, BBoxTestMixin, MaskTestMixin
-
-
 
 from .. import builder
 # from mmdet.core import bbox2roi,bbox2result, build_assigner, build_sampler,
@@ -69,7 +67,7 @@ class TwoStageDetectorRbbox(BaseDetector, RPNTestMixin, BBoxTestMixin,
         return hasattr(self, 'rpn_head') and self.rpn_head is not None
 
     def init_weights(self, pretrained=None):
-        super(TwoStageDetectorRbbox, self).init_weights(pretrained)
+        super(TwoStageDetectorRbbox, self).init_weights()
         self.backbone.init_weights()
         if self.with_neck:
             if isinstance(self.neck, nn.Sequential):
@@ -103,17 +101,28 @@ class TwoStageDetectorRbbox(BaseDetector, RPNTestMixin, BBoxTestMixin,
                       gt_bboxes_ignore=None,
                       gt_masks=None,
                       proposals=None):
-        # mean = torch.tensor([123.675, 116.28, 103.53])
-        # std = torch.tensor([58.395, 57.12, 57.375])
-        # img1 = img[0].detach().cpu().permute((1, 2, 0)) * std + mean
-        # import numpy as np
-        # import cv2
-        # img1 = img1.numpy().astype(np.uint8).copy()
-        # cv2.imshow("img1", img1)
-        # cv2.waitKey(0)
+        show_data = False
+        if show_data:
+            import numpy as np
+            import cv2
+            mean = torch.tensor([123.675, 116.28, 103.53])
+            std = torch.tensor([58.395, 57.12, 57.375])
+            img1 = img[0].detach().cpu().permute((1, 2, 0)) * std + mean
+            img1 = img1.numpy().astype(np.uint8).copy()
+            boxes = gt_bboxes[0]
+            labels = gt_labels[0]
+            img1 = cv2.cvtColor(img1,cv2.COLOR_RGB2BGR)
+            for box, label in zip(boxes, labels):
+                box = box.detach().cpu().numpy().astype(int)
+                label = int(label.detach().cpu())
+                txt = ["airplane", "ship", "vehicle", "court", "road"][label]
+                cv2.rectangle(img1, (box[0], box[1]), (box[2], box[3]),(255,0,0))
+                cv2.putText(img1, txt, (box[0], box[1]),
+                            cv2.FONT_HERSHEY_DUPLEX, 0.5, (255, 255, 255))
+            cv2.imshow("img1", img1)
+            cv2.waitKey(0)
 
         x = self.extract_feat(img)
-
         losses = dict()
 
         # RPN forward and loss
@@ -172,7 +181,6 @@ class TwoStageDetectorRbbox(BaseDetector, RPNTestMixin, BBoxTestMixin,
                 sampling_results, gt_masks, gt_labels, self.train_cfg.rcnn)
             bb = torch.min(rbbox_targets[0]).cpu()
             a1 = torch.max(rbbox_targets[0]).cpu()
-
 
             loss_bbox = self.bbox_head.loss(cls_score, bbox_pred,
                                             *rbbox_targets)

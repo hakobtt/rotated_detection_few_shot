@@ -1,3 +1,3 @@
-from .single_level import SingleRoIExtractor
+from .single_level import SingleRoIExtractorHakob
 
-__all__ = ['SingleRoIExtractor']
+__all__ = ['SingleRoIExtractorHakob']

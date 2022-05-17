@@ -123,7 +123,7 @@ data = dict(
     train=dict(
         sup=dict(
             type=dataset_type,
-            ann_file=data_root + f'train{tile_side_len}/few_shot_8.json',
+            ann_file=data_root + f'train{tile_side_len}/few_shot_200.json',
             img_prefix=data_root + f'train{tile_side_len}/images/',
         ),
         unsup=dict(

@@ -3,40 +3,32 @@ _base_ = "../base.py"
 model = dict(
     type='FasterRCNNOBB',
     backbone=dict(
-        type='ResNet',
+        type='ResNetOld',
         depth=50,
         num_stages=4,
         out_indices=(0, 1, 2, 3),
         frozen_stages=1,
         style='pytorch',
-        init_cfg=dict(
-            type="Pretrained", checkpoint="modelzoo://resnet50"
-        ),
     ),
     neck=dict(
-        type='FPN',
+        type='FPNHakob',
         in_channels=[256, 512, 1024, 2048],
         out_channels=256,
         num_outs=5),
     rpn_head=dict(
-        type='RPNHead',
+        type='RPNHeadHakob',
         in_channels=256,
         feat_channels=256,
-        anchor_generator=dict(
-            type='AnchorGenerator',
-            scales=[8],
-            ratios=[0.5, 1.0, 2.0],
-            strides=[4, 8, 16, 32, 64]),
-        bbox_coder=dict(
-            type='DeltaXYWHBBoxCoder',
-            target_means=[.0, .0, .0, .0],
-            target_stds=[1.0, 1.0, 1.0, 1.0]),
+        anchor_scales=[8],
+        anchor_ratios=[0.5, 1.0, 2.0],
+        anchor_strides=[4, 8, 16, 32, 64],
+        target_means=[.0, .0, .0, .0],
+        target_stds=[1.0, 1.0, 1.0, 1.0],
         loss_cls=dict(
             type='CrossEntropyLoss', use_sigmoid=True, loss_weight=1.0),
-        loss_bbox=dict(type='SmoothL1Loss', beta=1.0 / 9.0, loss_weight=1.0))
-    ,
+        loss_bbox=dict(type='SmoothL1Loss', beta=1.0 / 9.0, loss_weight=1.0)),
     bbox_roi_extractor=dict(
-        type='SingleRoIExtractor',
+        type='SingleRoIExtractorHakob',
         roi_layer=dict(type='RoIAlign', out_size=7, sample_num=2),
         out_channels=256,
         featmap_strides=[4, 8, 16, 32]),
@@ -96,9 +88,9 @@ test_cfg = dict(
     rpn=dict(
         nms_across_levels=False,
         nms_pre=2000,
-        max_per_img=2000,
+        nms_post=2000,
         max_num=2000,
-        nms=dict(type='nms', iou_threshold=0.7),
+        nms_thr=0.7,
         min_bbox_size=0),
     rcnn=dict(
         # score_thr=0.05, nms=dict(type='py_cpu_nms_poly_fast', iou_thr=0.1), max_per_img=1000)
@@ -232,7 +224,7 @@ log_config = dict(
 total_epochs = 100
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
-work_dir = './work_dirs/faster_rcnn_obb_r50_fpn_1x_fair1m_5classes_few_shot_v3'
+work_dir = './work_dirs/faster_rcnn_obb_r50_fpn_1x_fair1m_5classes_few_shot_v2'
 load_from = None
 resume_from = None
 workflow = [('train', 1)]
