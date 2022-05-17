@@ -58,7 +58,7 @@ class BBoxTestMixin(object):
             roi_feats = self.shared_head(roi_feats)
         cls_score, bbox_pred = self.bbox_head(roi_feats)
         img_shape = img_meta[0]['img_shape']
-        scale_factor = img_meta[0]['scale_factor']
+        scale_factor = img_meta[0]['scale_factor'][0]
         det_bboxes, det_labels = self.bbox_head.get_det_bboxes(
             rois,
             cls_score,

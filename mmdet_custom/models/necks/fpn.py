@@ -2,12 +2,12 @@ import torch.nn as nn
 import torch.nn.functional as F
 from mmcv.cnn import xavier_init
 
-from ..registry import NECKS
+from mmdet.models import NECKS
 from ..utils import ConvModule
 
 
 @NECKS.register_module
-class FPN(nn.Module):
+class FPNHakob(nn.Module):
 
     def __init__(self,
                  in_channels,
@@ -22,7 +22,7 @@ class FPN(nn.Module):
                  norm_cfg=None,
                  activation=None,
                  with_visualize=False):
-        super(FPN, self).__init__()
+        super(FPNHakob, self).__init__()
         assert isinstance(in_channels, list)
         self.in_channels = in_channels
         self.out_channels = out_channels

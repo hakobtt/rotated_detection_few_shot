@@ -8,10 +8,10 @@ class FasterRCNNOBB(TwoStageDetectorRbbox):
     def __init__(self,
                  backbone,
                  rpn_head,
-                 bbox_roi_extractor,
-                 bbox_head,
+
                  train_cfg,
                  test_cfg,
+                 roi_head=None,
                  neck=None,
                  shared_head=None,
                  pretrained=None):
@@ -20,8 +20,9 @@ class FasterRCNNOBB(TwoStageDetectorRbbox):
             neck=neck,
             shared_head=shared_head,
             rpn_head=rpn_head,
-            bbox_roi_extractor=bbox_roi_extractor,
-            bbox_head=bbox_head,
+            roi_head=roi_head,
+            # bbox_roi_extractor=bbox_roi_extractor,
+            # bbox_head=bbox_head,
             train_cfg=train_cfg,
             test_cfg=test_cfg,
             pretrained=pretrained)

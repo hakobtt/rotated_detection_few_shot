@@ -4,11 +4,11 @@ import torch
 import torch.nn as nn
 
 from mmdet_custom import ops
-from ..registry import ROI_EXTRACTORS
-
+# from ..registry import ROI_EXTRACTORS
+from mmdet.models import ROI_EXTRACTORS
 
 @ROI_EXTRACTORS.register_module
-class SingleRoIExtractor(nn.Module):
+class SingleRoIExtractorHakob(nn.Module):
     """Extract RoI features from a single level feature map.
 
     If there are mulitple input feature levels, each RoI is mapped to a level
@@ -26,7 +26,7 @@ class SingleRoIExtractor(nn.Module):
                  out_channels,
                  featmap_strides,
                  finest_scale=56):
-        super(SingleRoIExtractor, self).__init__()
+        super(SingleRoIExtractorHakob, self).__init__()
         self.roi_layers = self.build_roi_layers(roi_layer, featmap_strides)
         self.out_channels = out_channels
         self.featmap_strides = featmap_strides

@@ -125,11 +125,11 @@ def create_few_shot(ann_file, data_root_dir, each_class_cnt):
 def main():
     data_root_dir = "/mnt/data/datasets/gaofen/FAIR1M2.0/fair1_1000/val1000/images"
     annotation_file = "/mnt/data/datasets/gaofen/FAIR1M2.0/fair1_1000/val1000/val1000_5classes.json"
-    # data_root_dir = "/mnt/data/datasets/gaofen/FAIR1M2.0/fair1_1000/train1000/images"
-    # annotation_file = "/mnt/data/datasets/gaofen/FAIR1M2.0/fair1_1000/train1000/train1000_5classes.json"
+    data_root_dir = "/mnt/data/datasets/gaofen/FAIR1M2.0/fair1_1000/train1000/images"
+    annotation_file = "/mnt/data/datasets/gaofen/FAIR1M2.0/fair1_1000/train1000/train1000_5classes.json"
 
     create_few_shot(annotation_file,
-                    data_root_dir, 200)
+                    data_root_dir, 50)
     load = True
     if load:
         load_annotations(annotation_file, data_root_dir)
