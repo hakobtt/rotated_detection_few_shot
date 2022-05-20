@@ -38,8 +38,8 @@ def single_gpu_test(model, data_loader, show=True, log_dir=None):
         # data["img_meta"] = data["img_metas"]
         with torch.no_grad():
             result = model(return_loss=False, rescale=True, **data)
-        results.append(result)
-        show_res = False
+        results.append(result[0])
+        show_res = True
         if show_res:
             std = torch.tensor([58.395, 57.12, 57.375])
             mean = torch.tensor([123.675, 116.28, 103.53])
@@ -48,7 +48,7 @@ def single_gpu_test(model, data_loader, show=True, log_dir=None):
             img = img.detach().cpu().numpy().astype(np.uint8).copy()
             img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
-            img = draw_poly_detections(img, result, ["airplane", "ship", "vehicle", "court", "road"], scale=1,
+            img = draw_poly_detections(img, result[0], ["airplane", "ship", "vehicle", "court", "road"], scale=1,
                                        threshold=0.2,
                                        )
             cv2.imshow("img", img)

@@ -82,7 +82,8 @@ class DOTA1_5Dataset_v2(CocoDataset):
             bboxes=gt_bboxes, labels=gt_labels, bboxes_ignore=gt_bboxes_ignore)
         ann['gt_bboxes'] = ann["bboxes"]
         if with_mask:
-            ann['masks'] = gt_masks
+            # ann['masks'] = gt_masks
+            ann['masks'] = gt_mask_polys
 
             # poly format is not used in the current implementation
             ann['mask_polys'] = gt_mask_polys

@@ -7,7 +7,7 @@ import copy
 
 
 # TODO: check the angle and module operation
-def dbbox2delta(proposals, gt, means = [0, 0, 0, 0, 0], stds=[1, 1, 1, 1, 1]):
+def dbbox2delta(proposals, gt, means=[0, 0, 0, 0, 0], stds=[1, 1, 1, 1, 1]):
     """
     :param proposals: (x_ctr, y_ctr, w, h, angle)
             shape (n, 5)
@@ -42,6 +42,7 @@ def dbbox2delta(proposals, gt, means = [0, 0, 0, 0, 0], stds=[1, 1, 1, 1, 1]):
 
     # TODO: expand bbox regression
     return deltas
+
 
 def delta2dbbox(Rrois,
                 deltas,
@@ -88,7 +89,7 @@ def delta2dbbox(Rrois,
 
     # TODO: check the hard code
     gangle = (2 * np.pi) * dangle + Rroi_angle
-    gangle = gangle % ( 2 * np.pi)
+    gangle = gangle % (2 * np.pi)
 
     if max_shape is not None:
         pass
@@ -96,7 +97,8 @@ def delta2dbbox(Rrois,
     bboxes = torch.stack([gx, gy, gw, gh, gangle], dim=-1).view_as(deltas)
     return bboxes
 
-def dbbox2delta_v3(proposals, gt, means = [0, 0, 0, 0, 0], stds=[1, 1, 1, 1, 1]):
+
+def dbbox2delta_v3(proposals, gt, means=[0, 0, 0, 0, 0], stds=[1, 1, 1, 1, 1]):
     """
     This version removes the module operation
     :param proposals: (x_ctr, y_ctr, w, h, angle)
@@ -137,12 +139,13 @@ def dbbox2delta_v3(proposals, gt, means = [0, 0, 0, 0, 0], stds=[1, 1, 1, 1, 1])
 
     return deltas
 
+
 def delta2dbbox_v3(Rrois,
-                deltas,
-                means=[0, 0, 0, 0, 0],
-                stds=[1, 1, 1, 1, 1],
-                max_shape=None,
-                wh_ratio_clip=16 / 1000):
+                   deltas,
+                   means=[0, 0, 0, 0, 0],
+                   stds=[1, 1, 1, 1, 1],
+                   max_shape=None,
+                   wh_ratio_clip=16 / 1000):
     """
     This version removes the module operation
     :param Rrois: (cx, cy, w, h, theta)
@@ -191,7 +194,8 @@ def delta2dbbox_v3(Rrois,
     bboxes = torch.stack([gx, gy, gw, gh, gangle], dim=-1).view_as(deltas)
     return bboxes
 
-def dbbox2delta_v2(proposals, gt, means = [0, 0, 0, 0, 0], stds=[1, 1, 1, 1, 1]):
+
+def dbbox2delta_v2(proposals, gt, means=[0, 0, 0, 0, 0], stds=[1, 1, 1, 1, 1]):
     """
     :param proposals: (x_ctr, y_ctr, w, h, angle)
             shape (n, 5)
@@ -217,7 +221,7 @@ def dbbox2delta_v2(proposals, gt, means = [0, 0, 0, 0, 0], stds=[1, 1, 1, 1, 1])
     dist = targets_dangle % (2 * np.pi)
     dist = torch.min(dist, np.pi * 2 - dist)
     try:
-        assert np.all(dist.cpu().numpy() <= (np.pi/2. + 0.001) )
+        assert np.all(dist.cpu().numpy() <= (np.pi / 2. + 0.001))
     except:
         import pdb
         pdb.set_trace()
@@ -228,19 +232,19 @@ def dbbox2delta_v2(proposals, gt, means = [0, 0, 0, 0, 0], stds=[1, 1, 1, 1, 1])
     dist = dist / (np.pi / 2.)
     deltas = torch.stack((targets_dx, targets_dy, targets_dw, targets_dh, dist), -1)
 
-
     means = deltas.new_tensor(means).unsqueeze(0)
     stds = deltas.new_tensor(stds).unsqueeze(0)
     deltas = deltas.sub_(means).div_(stds)
 
     return deltas
 
+
 def delta2dbbox_v2(Rrois,
-                deltas,
-                means=[0, 0, 0, 0, 0],
-                stds=[1, 1, 1, 1, 1],
-                max_shape=None,
-                wh_ratio_clip=16 / 1000):
+                   deltas,
+                   means=[0, 0, 0, 0, 0],
+                   stds=[1, 1, 1, 1, 1],
+                   max_shape=None,
+                   wh_ratio_clip=16 / 1000):
     means = deltas.new_tensor(means).repeat(1, deltas.size(1) // 5)
     stds = deltas.new_tensor(stds).repeat(1, deltas.size(1) // 5)
     denorm_deltas = deltas * stds + means
@@ -276,6 +280,7 @@ def delta2dbbox_v2(Rrois,
     bboxes = torch.stack([gx, gy, gw, gh, gangle], dim=-1).view_as(deltas)
     return bboxes
 
+
 def choose_best_match_batch(Rrois, gt_rois):
     """
     choose best match representation of gt_rois for a Rrois
@@ -293,23 +298,23 @@ def choose_best_match_batch(Rrois, gt_rois):
                                             copy.deepcopy(gt_rois[:, 2]), copy.deepcopy(gt_rois[:, 3]), \
                                             copy.deepcopy(gt_rois[:, 4])
 
-    gt_angle_extent = torch.cat((gt_angles[:, np.newaxis], (gt_angles + np.pi/2.)[:, np.newaxis],
-                                      (gt_angles + np.pi)[:, np.newaxis], (gt_angles + np.pi * 3/2.)[:, np.newaxis]), 1)
+    gt_angle_extent = torch.cat((gt_angles[:, np.newaxis], (gt_angles + np.pi / 2.)[:, np.newaxis],
+                                 (gt_angles + np.pi)[:, np.newaxis], (gt_angles + np.pi * 3 / 2.)[:, np.newaxis]), 1)
     dist = (Rroi_angles - gt_angle_extent) % (2 * np.pi)
     dist = torch.min(dist, np.pi * 2 - dist)
     min_index = torch.argmin(dist, 1)
 
     gt_rois_extent0 = copy.deepcopy(gt_rois)
     gt_rois_extent1 = torch.cat((gt_xs.unsqueeze(1), gt_ys.unsqueeze(1), \
-                                 gt_hs.unsqueeze(1), gt_ws.unsqueeze(1), gt_angles.unsqueeze(1) + np.pi/2.), 1)
+                                 gt_hs.unsqueeze(1), gt_ws.unsqueeze(1), gt_angles.unsqueeze(1) + np.pi / 2.), 1)
     gt_rois_extent2 = torch.cat((gt_xs.unsqueeze(1), gt_ys.unsqueeze(1), \
                                  gt_ws.unsqueeze(1), gt_hs.unsqueeze(1), gt_angles.unsqueeze(1) + np.pi), 1)
     gt_rois_extent3 = torch.cat((gt_xs.unsqueeze(1), gt_ys.unsqueeze(1), \
-                                 gt_hs.unsqueeze(1), gt_ws.unsqueeze(1), gt_angles.unsqueeze(1) + np.pi * 3/2.), 1)
+                                 gt_hs.unsqueeze(1), gt_ws.unsqueeze(1), gt_angles.unsqueeze(1) + np.pi * 3 / 2.), 1)
     gt_rois_extent = torch.cat((gt_rois_extent0.unsqueeze(1),
-                                     gt_rois_extent1.unsqueeze(1),
-                                     gt_rois_extent2.unsqueeze(1),
-                                     gt_rois_extent3.unsqueeze(1)), 1)
+                                gt_rois_extent1.unsqueeze(1),
+                                gt_rois_extent2.unsqueeze(1),
+                                gt_rois_extent3.unsqueeze(1)), 1)
 
     gt_rois_new = torch.zeros_like(gt_rois)
     # TODO: add pool.map here
@@ -319,6 +324,7 @@ def choose_best_match_batch(Rrois, gt_rois):
     gt_rois_new[:, 4] = gt_rois_new[:, 4] % (2 * np.pi)
 
     return gt_rois_new
+
 
 def choose_best_Rroi_batch(Rroi):
     """
@@ -341,7 +347,8 @@ def choose_best_Rroi_batch(Rroi):
 
     return Rroi
 
-def best_match_dbbox2delta(Rrois, gt, means = [0, 0, 0, 0, 0], stds=[1, 1, 1, 1, 1]):
+
+def best_match_dbbox2delta(Rrois, gt, means=[0, 0, 0, 0, 0], stds=[1, 1, 1, 1, 1]):
     """
     :param Rrois: (x_ctr, y_ctr, w, h, angle)
             shape (n, 5)
@@ -364,6 +371,7 @@ def best_match_dbbox2delta(Rrois, gt, means = [0, 0, 0, 0, 0], stds=[1, 1, 1, 1,
 
     return bbox_targets
 
+
 # TODO: check the negative situation of flip
 def dbbox_flip(dbboxes, img_shape):
     """
@@ -380,6 +388,7 @@ def dbbox_flip(dbboxes, img_shape):
     flipped[:, 4::5] = np.pi - dbboxes[:, 4::5]
 
     return flipped
+
 
 def dbbox_mapping(dbboxes, img_shape, scale_factor, flip):
     """
@@ -400,6 +409,7 @@ def dbbox_mapping(dbboxes, img_shape, scale_factor, flip):
 
     return new_dbboxes
 
+
 def dbbox_mapping_back(dbboxes, img_shape, scale_factor, flip):
     """
     Map dbboxes from testing scael to original image scale
@@ -416,6 +426,7 @@ def dbbox_mapping_back(dbboxes, img_shape, scale_factor, flip):
     new_dbboxes[..., 3::5] = new_dbboxes[..., 3::5] / scale_factor
     return new_dbboxes
 
+
 def dbbox_rotate_mapping(bboxes, img_shape, angle):
     """
         map bboxes from the original image angle to testing angle
@@ -431,7 +442,7 @@ def dbbox_rotate_mapping(bboxes, img_shape, angle):
     assert len(bboxes.size()) == 2
     num = bboxes.size(0)
     h, w = img_shape[:2]
-    if angle in [90, 270] :
+    if angle in [90, 270]:
         new_h, new_w = w, h
     else:
         new_h, new_w = h, w
@@ -441,8 +452,8 @@ def dbbox_rotate_mapping(bboxes, img_shape, angle):
     xys = torch.cat((bboxes[..., 0::5].view(-1, 1), bboxes[..., 1::5].view(-1, 1)), -1)
     norm_xys = xys - center
 
-    rotate_matrix = torch.FloatTensor([[np.cos(angle/180 * np.pi), np.sin(angle/180 * np.pi)],
-                              [-np.sin(angle/180 * np.pi), np.cos(angle/180 * np.pi)]]).to(bboxes.device)
+    rotate_matrix = torch.FloatTensor([[np.cos(angle / 180 * np.pi), np.sin(angle / 180 * np.pi)],
+                                       [-np.sin(angle / 180 * np.pi), np.cos(angle / 180 * np.pi)]]).to(bboxes.device)
 
     norm_rotated_xys = torch.matmul(norm_xys, rotate_matrix)
 
@@ -455,7 +466,7 @@ def dbbox_rotate_mapping(bboxes, img_shape, angle):
     rotated_dbboxes[..., 1::5] = rotated_xys[..., 1::2]
     rotated_dbboxes[..., 2::5] = bboxes[..., 2::5]
     rotated_dbboxes[..., 3::5] = bboxes[..., 3::5]
-    rotated_dbboxes[..., 4::5] = bboxes[..., 4::5] + angle/180 * np.pi
+    rotated_dbboxes[..., 4::5] = bboxes[..., 4::5] + angle / 180 * np.pi
 
     return rotated_dbboxes
 
@@ -511,7 +522,7 @@ def bbox_rotate_mapping(bboxes, img_shape, angle):
     return rotated_bboxes
 
 
-def dbbox2delta_warp(proposals, gt, means = [0, 0, 0, 0, 0], stds=[1, 1, 1, 1, 1]):
+def dbbox2delta_warp(proposals, gt, means=[0, 0, 0, 0, 0], stds=[1, 1, 1, 1, 1]):
     """
     :param proposals: (xmin, ymin, xmax, ymax)
     :param gt: (x1, y_ctr, w, h, angle)
@@ -520,18 +531,22 @@ def dbbox2delta_warp(proposals, gt, means = [0, 0, 0, 0, 0], stds=[1, 1, 1, 1, 1
     :return:
     """
 
+
 def TuplePoly2Poly(poly):
     outpoly = [poly[0][0], poly[0][1],
-                       poly[1][0], poly[1][1],
-                       poly[2][0], poly[2][1],
-                       poly[3][0], poly[3][1]
-                       ]
+               poly[1][0], poly[1][1],
+               poly[2][0], poly[2][1],
+               poly[3][0], poly[3][1]
+               ]
     return outpoly
+
 
 def Tuplelist2Polylist(tuple_poly_list):
     polys = map(TuplePoly2Poly, tuple_poly_list)
 
     return list(polys)
+
+
 #
 # def mask2poly_single(binary_mask):
 #     """
@@ -549,9 +564,9 @@ def Tuplelist2Polylist(tuple_poly_list):
 #     # poly = TuplePoly2Poly(poly)
 #
 #     return poly
-    # except:
-    #     # TODO: assure there is no empty mask_poly
-    #     return []
+# except:
+#     # TODO: assure there is no empty mask_poly
+#     return []
 
 # TODO: test the function
 def mask2poly_single(binary_mask):
@@ -567,19 +582,20 @@ def mask2poly_single(binary_mask):
     max_contour = max(contours, key=len)
     rect = cv2.minAreaRect(max_contour)
     poly = cv2.boxPoints(rect)
-        # poly = TuplePoly2Poly(poly)
+    # poly = TuplePoly2Poly(poly)
     # except:
-        # import pdb
-        # pdb.set_trace()
+    # import pdb
+    # pdb.set_trace()
     return poly
+
 
 def mask2poly(binary_mask_list):
     polys = map(mask2poly_single, binary_mask_list)
     # polys = np.stack(polys
     return list(polys)
 
-def gt_mask_bp_obbs(gt_masks, with_module=True):
 
+def gt_mask_bp_obbs(gt_masks, with_module=True):
     # trans gt_masks to gt_obbs
     gt_polys = mask2poly(gt_masks)
     gt_bp_polys = get_best_begin_point(gt_polys)
@@ -587,14 +603,16 @@ def gt_mask_bp_obbs(gt_masks, with_module=True):
 
     return gt_obbs
 
-def gt_mask_bp_obbs_list(gt_masks_list):
 
+def gt_mask_bp_obbs_list(gt_masks_list):
     gt_obbs_list = map(gt_mask_bp_obbs, gt_masks_list)
 
     return list(gt_obbs_list)
 
+
 def cal_line_length(point1, point2):
-    return math.sqrt( math.pow(point1[0] - point2[0], 2) + math.pow(point1[1] - point2[1], 2))
+    return math.sqrt(math.pow(point1[0] - point2[0], 2) + math.pow(point1[1] - point2[1], 2))
+
 
 def get_best_begin_point_single(coordinate):
     x1 = coordinate[0][0]
@@ -625,19 +643,24 @@ def get_best_begin_point_single(coordinate):
     if force_flag != 0:
         pass
         # print("choose one direction!")
-    return  combinate[force_flag]
+    return combinate[force_flag]
+
 
 def get_best_begin_point_warp_single(coordinate):
-
     return TuplePoly2Poly(get_best_begin_point_single(coordinate))
+
 
 def get_best_begin_point(coordinate_list):
     best_coordinate_list = map(get_best_begin_point_warp_single, coordinate_list)
     # import pdb
     # pdb.set_trace()
+    if len(list(coordinate_list)) == 0:
+        return np.array([], np.float32)
+
     best_coordinate_list = np.stack(list(best_coordinate_list))
 
     return best_coordinate_list
+
 
 # def polygonToRotRectangle(polys):
 #     """
@@ -664,6 +687,7 @@ def xy2wh(boxes):
 
     return torch.cat((ex_ctr_x.unsqueeze(1), ex_ctr_y.unsqueeze(1), ex_widths.unsqueeze(1), ex_heights.unsqueeze(1)), 1)
 
+
 def xy2wh_c(boxes):
     """
 
@@ -684,6 +708,7 @@ def xy2wh_c(boxes):
 
     return out_boxes
 
+
 def wh2xy(bboxes):
     """
     :param bboxes: (x_ctr, y_ctr, w, h) (n, 4)
@@ -697,6 +722,7 @@ def wh2xy(bboxes):
     ymaxs = bboxes[..., 1] + (bboxes[..., 3] - 1) / 2.0
 
     return torch.cat((xmins.unsqueeze(1), ymins.unsqueeze(1), xmaxs.unsqueeze(1), ymaxs.unsqueeze(1)), 1)
+
 
 def wh2xy_c(bboxes):
     """
@@ -716,6 +742,7 @@ def wh2xy_c(bboxes):
     out_bboxes[..., 3::4] = ymaxs
     return out_bboxes
 
+
 def hbb2obb(bboxes):
     """
 
@@ -730,6 +757,7 @@ def hbb2obb(bboxes):
 
     return dbboxes
 
+
 def hbb2obb_v2(boxes):
     """
     fix a bug
@@ -741,12 +769,14 @@ def hbb2obb_v2(boxes):
     ex_widths = boxes[..., 3] - boxes[..., 1] + 1.0
     ex_ctr_x = boxes[..., 0] + 0.5 * (ex_heights - 1.0)
     ex_ctr_y = boxes[..., 1] + 0.5 * (ex_widths - 1.0)
-    c_bboxes = torch.cat((ex_ctr_x.unsqueeze(1), ex_ctr_y.unsqueeze(1), ex_widths.unsqueeze(1), ex_heights.unsqueeze(1)), 1)
+    c_bboxes = torch.cat(
+        (ex_ctr_x.unsqueeze(1), ex_ctr_y.unsqueeze(1), ex_widths.unsqueeze(1), ex_heights.unsqueeze(1)), 1)
     initial_angles = -c_bboxes.new_ones((num_boxes, 1)) * np.pi / 2
     # initial_angles = -torch.ones((num_boxes, 1)) * np.pi/2
     dbboxes = torch.cat((c_bboxes, initial_angles), 1)
 
     return dbboxes
+
 
 def roi2droi(rois):
     """
@@ -758,6 +788,7 @@ def roi2droi(rois):
 
     return torch.cat((rois[:, 0].unsqueeze(1), obbs), 1)
 
+
 def polygonToRotRectangle_batch(bbox, with_module=True):
     """
     :param bbox: The polygon stored in format [x1, y1, x2, y2, x3, y3, x4, y4]
@@ -766,26 +797,25 @@ def polygonToRotRectangle_batch(bbox, with_module=True):
             shape [num_rot_recs, 5]
     """
     # print('bbox: ', bbox)
-    bbox = np.array(bbox,dtype=np.float32)
-    bbox = np.reshape(bbox,newshape=(-1, 2, 4),order='F')
+    bbox = np.array(bbox, dtype=np.float32)
+    bbox = np.reshape(bbox, newshape=(-1, 2, 4), order='F')
     # angle = math.atan2(-(bbox[0,1]-bbox[0,0]),bbox[1,1]-bbox[1,0])
     # print('bbox: ', bbox)
-    angle = np.arctan2(-(bbox[:, 0,1]-bbox[:, 0,0]),bbox[:, 1,1]-bbox[:, 1,0])
+    angle = np.arctan2(-(bbox[:, 0, 1] - bbox[:, 0, 0]), bbox[:, 1, 1] - bbox[:, 1, 0])
     # angle = np.arctan2(-(bbox[:, 0,1]-bbox[:, 0,0]),bbox[:, 1,1]-bbox[:, 1,0])
     # center = [[0],[0]] ## shape [2, 1]
     # print('angle: ', angle)
     center = np.zeros((bbox.shape[0], 2, 1))
     for i in range(4):
-        center[:, 0, 0] += bbox[:, 0,i]
-        center[:, 1, 0] += bbox[:, 1,i]
+        center[:, 0, 0] += bbox[:, 0, i]
+        center[:, 1, 0] += bbox[:, 1, i]
 
-    center = np.array(center,dtype=np.float32)/4.0
+    center = np.array(center, dtype=np.float32) / 4.0
 
     # R = np.array([[math.cos(angle), -math.sin(angle)], [math.sin(angle), math.cos(angle)]], dtype=np.float32)
     R = np.array([[np.cos(angle), -np.sin(angle)], [np.sin(angle), np.cos(angle)]], dtype=np.float32)
 
-    normalized = np.matmul(R.transpose((2, 1, 0)),bbox-center)
-
+    normalized = np.matmul(R.transpose((2, 1, 0)), bbox - center)
 
     xmin = np.min(normalized[:, 0, :], axis=1)
     # print('diff: ', (xmin - normalized[:, 0, 3]))
@@ -807,11 +837,12 @@ def polygonToRotRectangle_batch(bbox, with_module=True):
     h = h[:, np.newaxis]
     # TODO: check it
     if with_module:
-        angle = angle[:, np.newaxis] % ( 2 * np.pi)
+        angle = angle[:, np.newaxis] % (2 * np.pi)
     else:
         angle = angle[:, np.newaxis]
     dboxes = np.concatenate((center[:, 0].astype(np.float), center[:, 1].astype(np.float), w, h, angle), axis=1)
     return dboxes
+
 
 def RotBox2Polys(dboxes):
     """
@@ -849,6 +880,7 @@ def RotBox2Polys(dboxes):
 
     polys = np.concatenate((x1, y1, x2, y2, x3, y3, x4, y4), axis=1)
     return polys
+
 
 def RotBox2Polys_torch(dboxes):
     """
@@ -907,6 +939,7 @@ def poly2bbox(polys):
 
     return np.concatenate((xmin, ymin, xmax, ymax), 1)
 
+
 def dbbox2roi(dbbox_list):
     """
     Convert a list of dbboxes to droi format.
@@ -925,6 +958,7 @@ def dbbox2roi(dbbox_list):
     drois = torch.cat(drois_list, 0)
     return drois
 
+
 def droi2dbbox(drois):
     dbbox_list = []
     img_ids = torch.unique(drois[:, 0].cpu(), sorted=True)
@@ -933,6 +967,7 @@ def droi2dbbox(drois):
         dbbox = drois[inds, 1:]
         dbbox_list.append(dbbox)
     return dbbox_list
+
 
 def dbbox2result(dbboxes, labels, num_classes):
     """
@@ -951,6 +986,7 @@ def dbbox2result(dbboxes, labels, num_classes):
         dbboxes = dbboxes.cpu().numpy()
         labels = labels.cpu().numpy()
         return [dbboxes[labels == i, :] for i in range(num_classes - 1)]
+
 
 def distance2bbox(points, distance, max_shape=None):
     """Decode distance prediction to bounding box.

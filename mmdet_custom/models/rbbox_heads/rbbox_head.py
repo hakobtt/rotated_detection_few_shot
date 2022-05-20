@@ -85,8 +85,8 @@ class BBoxHeadRbbox(nn.Module):
         bbox_pred = self.fc_reg(x) if self.with_reg else None
         return cls_score, bbox_pred
 
-    def get_target(self, sampling_results, gt_masks, gt_labels,
-                   rcnn_train_cfg):
+    def get_targets(self, sampling_results, gt_masks, gt_labels,
+                    rcnn_train_cfg):
         """
         obb target hbb
         :param sampling_results:
@@ -150,16 +150,17 @@ class BBoxHeadRbbox(nn.Module):
     def loss(self,
              cls_score,
              bbox_pred,
+             rois,
              labels,
              label_weights,
              bbox_targets,
              bbox_weights,
-             reduce="mean"):
+             reduction_override="mean"):
         losses = dict()
 
         if cls_score is not None:
             losses['rbbox_loss_cls'] = self.loss_cls(
-                cls_score, labels, label_weights, reduction_override=reduce)
+                cls_score, labels, label_weights, reduction_override=reduction_override)
             losses['rbbox_acc'] = accuracy(cls_score, labels)
         if bbox_pred is not None:
             pos_inds = labels > 0
@@ -176,14 +177,14 @@ class BBoxHeadRbbox(nn.Module):
                 avg_factor=bbox_targets.size(0))
         return losses
 
-    def get_det_bboxes(self,
-                       rois,
-                       cls_score,
-                       bbox_pred,
-                       img_shape,
-                       scale_factor,
-                       rescale=False,
-                       cfg=None):
+    def get_bboxes(self,
+                   rois,
+                   cls_score,
+                   bbox_pred,
+                   img_shape,
+                   scale_factor,
+                   rescale=False,
+                   cfg=None):
         if isinstance(cls_score, list):
             cls_score = sum(cls_score) / float(len(cls_score))
         scores = F.softmax(cls_score, dim=1) if cls_score is not None else None
@@ -210,7 +211,7 @@ class BBoxHeadRbbox(nn.Module):
             # bboxes = rois[:, 1:]
             dbboxes = obbs
             # TODO: add clip here
-
+        scale_factor = scale_factor[0]
         if rescale:
             # bboxes /= scale_factor
             # dbboxes[:, :4] /= scale_factor
@@ -228,22 +229,24 @@ class BBoxHeadRbbox(nn.Module):
         #     return det_bboxes, det_labels
         # else:
         c_device = dbboxes.device
-
-        det_bboxes, det_labels = multiclass_nms_rbbox(dbboxes, scores,
-                                                      cfg.score_thr, cfg.nms,
-                                                      cfg.max_per_img)
+        if cfg is None:
+            return dbboxes, scores
+        else:
+            det_bboxes, det_labels = multiclass_nms_rbbox(dbboxes, scores,
+                                                          cfg.score_thr, cfg.nms,
+                                                          cfg.max_per_img)
         # det_bboxes = torch.from_numpy(det_bboxes).to(c_device)
         # det_labels = torch.from_numpy(det_labels).to(c_device)
         return det_bboxes, det_labels
 
-    def get_det_rbboxes(self,
-                        rrois,
-                        cls_score,
-                        rbbox_pred,
-                        img_shape,
-                        scale_factor,
-                        rescale=False,
-                        cfg=None):
+    def get_rbboxes(self,
+                    rrois,
+                    cls_score,
+                    rbbox_pred,
+                    img_shape,
+                    scale_factor,
+                    rescale=False,
+                    cfg=None):
         if isinstance(cls_score, list):
             cls_score = sum(cls_score) / float(len(cls_score))
         scores = F.softmax(cls_score, dim=1) if cls_score is not None else None

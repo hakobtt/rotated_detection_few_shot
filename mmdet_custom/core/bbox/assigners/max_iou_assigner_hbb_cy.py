@@ -71,8 +71,8 @@ class MaxIoUAssignerCy(BaseAssigner):
         Returns:
             :obj:`AssignResult`: The assign result.
         """
-        if bboxes.shape[0] == 0 or gt_bboxes.shape[0] == 0:
-            raise ValueError('No gt or bboxes')
+        # if bboxes.shape[0] == 0 or gt_bboxes.shape[0] == 0:
+        #     raise ValueError('No gt or bboxes')
         bboxes = bboxes[:, :4]
         overlaps = bbox_overlaps_cy(gt_bboxes, bboxes)
 
@@ -102,14 +102,33 @@ class MaxIoUAssignerCy(BaseAssigner):
         Returns:
             :obj:`AssignResult`: The assign result.
         """
-        if overlaps.numel() == 0:
-            raise ValueError('No gt or proposals')
+        # if overlaps.numel() == 0:
+        #     raise ValueError('No gt or proposals')
 
         num_gts, num_bboxes = overlaps.size(0), overlaps.size(1)
+
 
         # 1. assign -1 by default
         assigned_gt_inds = overlaps.new_full(
             (num_bboxes, ), -1, dtype=torch.long)
+
+        if num_gts == 0 or num_bboxes == 0:
+            # No ground truth or boxes, return empty assignment
+            max_overlaps = overlaps.new_zeros((num_bboxes,))
+            if num_gts == 0:
+                # No truth, assign everything to background
+                assigned_gt_inds[:] = 0
+            if gt_labels is None:
+                assigned_labels = None
+            else:
+                assigned_labels = overlaps.new_full((num_bboxes,),
+                                                    -1,
+                                                    dtype=torch.long)
+            return AssignResult(
+                num_gts,
+                assigned_gt_inds,
+                max_overlaps,
+                labels=assigned_labels)
 
         # for each anchor, which gt best overlaps with it
         # for each anchor, the max iou of all gts

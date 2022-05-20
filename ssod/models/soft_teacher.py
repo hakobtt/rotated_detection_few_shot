@@ -247,8 +247,8 @@ class SoftTeacher(MultiSteamDetector):
             *bbox_targets,
             reduction_override="none",
         )
-        loss["loss_cls"] = loss["loss_cls"].sum() / max(bbox_targets[1].sum(), 1.0)
-        loss["loss_bbox"] = loss["loss_bbox"].sum() / max(
+        loss["rbbox_loss_cls"] = loss["rbbox_loss_cls"].sum() / max(bbox_targets[1].sum(), 1.0)
+        loss["rbbox_loss_bbox"] = loss["rbbox_loss_bbox"].sum() / max(
             bbox_targets[1].size()[0], 1.0
         )
         if len(gt_bboxes[0]) > 0:
@@ -284,9 +284,9 @@ class SoftTeacher(MultiSteamDetector):
         log_every_n(
             {"rcnn_reg_gt_num": sum([len(bbox) for bbox in gt_bboxes]) / len(gt_bboxes)}
         )
-        loss_bbox = self.student.roi_head.forward_train(
+        rbbox_loss_bbox = self.student.roi_head.forward_train(
             feat, img_metas, proposal_list, gt_bboxes, gt_labels, **kwargs
-        )["loss_bbox"]
+        )["rbbox_loss_bbox"]
         if len(gt_bboxes[0]) > 0:
             log_image_with_boxes(
                 "rcnn_reg",
@@ -298,7 +298,7 @@ class SoftTeacher(MultiSteamDetector):
                 interval=500,
                 img_norm_cfg=student_info["img_metas"][0]["img_norm_cfg"],
             )
-        return {"loss_bbox": loss_bbox}
+        return {"rbbox_loss_bbox": rbbox_loss_bbox}
 
     def get_sampling_result(
             self,
