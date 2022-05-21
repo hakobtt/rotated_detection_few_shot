@@ -14,23 +14,23 @@ train_pipeline = [
 
         transforms=[
             dict(type="RandFlip", flip_ratio=0.5),
-            dict(
-                type="OneOf",
-                transforms=[
-                    dict(type=k)
-                    for k in [
-                        "Identity",
-                        "AutoContrast",
-                        "RandEqualize",
-                        "RandSolarize",
-                        "RandColor",
-                        "RandContrast",
-                        "RandBrightness",
-                        "RandSharpness",
-                        "RandPosterize",
-                    ]
-                ],
-            ),
+            # dict(
+            #     type="OneOf",
+            #     transforms=[
+            #         dict(type=k)
+            #         for k in [
+            #             "Identity",
+            #             "AutoContrast",
+            #             "RandEqualize",
+            #             "RandSolarize",
+            #             "RandColor",
+            #             "RandContrast",
+            #             "RandBrightness",
+            #             "RandSharpness",
+            #             "RandPosterize",
+            #         ]
+            #     ],
+            # ),
         ],
         record=True,
     ),
@@ -220,13 +220,13 @@ semi_wrapper = dict(
     model="${model}",
     train_cfg=dict(
         use_teacher_proposal=False,
-        pseudo_label_initial_score_thr=0.5,
-        rpn_pseudo_threshold=0.9,
-        cls_pseudo_threshold=0.9,
+        pseudo_label_initial_score_thr=0.4,
+        rpn_pseudo_threshold=0.5,
+        cls_pseudo_threshold=0.5,
         reg_pseudo_threshold=0.02,
         jitter_times=10,
         jitter_scale=0.06,
-        min_pseduo_box_size=0,
+        min_pseduo_box_size=None,
         unsup_weight=4.0,
     ),
     test_cfg=dict(inference_on="student"),

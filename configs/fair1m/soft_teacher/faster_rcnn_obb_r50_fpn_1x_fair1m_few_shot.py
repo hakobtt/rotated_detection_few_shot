@@ -165,13 +165,13 @@ lr_config = dict(
     step=[8, 11],
 
 )
-checkpoint_config = dict(interval=1)
+checkpoint_config = dict(interval=1000)
 # yapf:disable
 log_config = dict(
     interval=5,
     hooks=[
-        dict(type='TensorboardLoggerHook')  # The Tensorboard logger is also supported
-        # dict(type='TextLoggerHook')
+        dict(type='TensorboardLoggerHook'),  # The Tensorboard logger is also supported
+        dict(type='TextLoggerHook')
     ]
 )
 # yapf:enable

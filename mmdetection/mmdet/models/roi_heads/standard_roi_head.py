@@ -52,6 +52,7 @@ class StandardRoIHead(BaseRoIHead, BBoxTestMixin, MaskTestMixin):
         return outs
 
     def forward_train(self,
+                      img,
                       x,
                       img_metas,
                       proposal_list,
@@ -101,7 +102,7 @@ class StandardRoIHead(BaseRoIHead, BBoxTestMixin, MaskTestMixin):
         losses = dict()
         # bbox head forward and loss
         if self.with_bbox:
-            bbox_results = self._bbox_forward_train(x, sampling_results,
+            bbox_results = self._bbox_forward_train(img, x, sampling_results,
                                                     gt_bboxes,gt_masks, gt_labels,
                                                     img_metas)
             losses.update(bbox_results['loss_bbox'])
@@ -128,13 +129,13 @@ class StandardRoIHead(BaseRoIHead, BBoxTestMixin, MaskTestMixin):
             cls_score=cls_score, bbox_pred=bbox_pred, bbox_feats=bbox_feats)
         return bbox_results
 
-    def _bbox_forward_train(self, x, sampling_results, gt_bboxes,gt_masks, gt_labels,
+    def _bbox_forward_train(self,img, x, sampling_results, gt_bboxes,gt_masks, gt_labels,
                             img_metas):
         """Run forward function and calculate loss for box head in training."""
         rois = bbox2roi([res.bboxes for res in sampling_results])
         bbox_results = self._bbox_forward(x, rois)
 
-        bbox_targets = self.bbox_head.get_targets(sampling_results, gt_masks,
+        bbox_targets = self.bbox_head.get_targets(img, sampling_results, gt_masks,
                                                   gt_labels, self.train_cfg)
         loss_bbox = self.bbox_head.loss(bbox_results['cls_score'],
                                         bbox_results['bbox_pred'], rois,

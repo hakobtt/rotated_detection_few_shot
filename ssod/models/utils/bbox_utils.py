@@ -209,7 +209,7 @@ class Transform2D:
                 )
                 .squeeze(1)
                 .cpu()
-                .numpy(),
+                .numpy().astype(np.uint8),
                 out_shape[0],
                 out_shape[1],
             )

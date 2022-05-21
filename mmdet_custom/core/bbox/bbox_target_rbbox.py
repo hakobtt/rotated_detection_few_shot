@@ -2,11 +2,12 @@ import torch
 
 from .transforms_rbbox import dbbox2delta, delta2dbbox, \
     mask2poly, get_best_begin_point, polygonToRotRectangle_batch \
-    , best_match_dbbox2delta, delta2dbbox_v3, dbbox2delta_v3, hbb2obb_v2
+    , best_match_dbbox2delta, delta2dbbox_v3, dbbox2delta_v3, hbb2obb_v2, RotBox2Polys
 from ..utils import multi_apply
 
 
-def bbox_target_rbbox(pos_bboxes_list,
+def bbox_target_rbbox(img,
+        pos_bboxes_list,
                       neg_bboxes_list,
                       pos_assigned_gt_inds_list,
                       gt_masks_list,
@@ -23,6 +24,7 @@ def bbox_target_rbbox(pos_bboxes_list,
     # pdb.set_trace()
     labels, label_weights, bbox_targets, bbox_weights = multi_apply(
         bbox_target_rbbox_single,
+        img,
         pos_bboxes_list,
         neg_bboxes_list,
         pos_assigned_gt_inds_list,
@@ -43,7 +45,9 @@ def bbox_target_rbbox(pos_bboxes_list,
     return labels, label_weights, bbox_targets, bbox_weights
 
 
-def bbox_target_rbbox_single(pos_bboxes,
+def bbox_target_rbbox_single(
+            img,
+        pos_bboxes,
                              neg_bboxes,
                              pos_assigned_gt_inds,
                              gt_masks,
@@ -89,6 +93,26 @@ def bbox_target_rbbox_single(pos_bboxes,
     # import pdb
     # pdb.set_trace()
     pos_gt_obbs = torch.from_numpy(polygonToRotRectangle_batch(pos_gt_bp_polys, with_module)).to(pos_bboxes.device)
+    show_data = True
+    if show_data:
+        mean = torch.tensor([123.675, 116.28, 103.53])
+        std = torch.tensor([58.395, 57.12, 57.375])
+        img1 = img.detach().cpu().permute((1, 2, 0)) * std + mean
+        import numpy as np
+        import cv2
+        img1 = img1.numpy().astype(np.uint8).copy()
+        img1 = cv2.cvtColor(img1, cv2.COLOR_BGR2RGB)
+        polys = RotBox2Polys(pos_gt_obbs.cpu().numpy())
+        color = (255, 0, 0)
+        for bbox in polys:
+            bbox = bbox.astype(int).flatten()
+            for i in range(3):
+                cv2.line(img1, (bbox[i * 2], bbox[i * 2 + 1]), (bbox[(i + 1) * 2], bbox[(i + 1) * 2 + 1]), color=color,
+                         thickness=2, lineType=cv2.LINE_AA)
+            cv2.line(img1, (bbox[6], bbox[7]), (bbox[0], bbox[1]), color=color, thickness=2, lineType=cv2.LINE_AA)
+
+        cv2.imshow("img1", img1)
+        cv2.waitKey(0)
     # print('pos_gt_obbs: ', pos_gt_obbs)
     if pos_bboxes.size(1) == 4:
         # if hbb_trans == 'hbb2obb':
