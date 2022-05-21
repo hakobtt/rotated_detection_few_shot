@@ -39,7 +39,7 @@ def single_gpu_test(model, data_loader, show=True, log_dir=None):
         with torch.no_grad():
             result = model(return_loss=False, rescale=True, **data)
         results.append(result[0])
-        show_res = True
+        show_res = False
         if show_res:
             std = torch.tensor([58.395, 57.12, 57.375])
             mean = torch.tensor([123.675, 116.28, 103.53])

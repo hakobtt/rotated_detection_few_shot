@@ -135,6 +135,7 @@ class TwoStageDetectorRbbox(BaseDetector, RPNTestMixin, BBoxTestMixin,
                       gt_bboxes_ignore=None,
                       gt_masks=None,
                       proposals=None,
+                      rbboxes=None,
                       **kwargs):
         """
         Args:
@@ -164,6 +165,15 @@ class TwoStageDetectorRbbox(BaseDetector, RPNTestMixin, BBoxTestMixin,
         Returns:
             dict[str, Tensor]: a dictionary of loss components
         """
+        # mean = torch.tensor([123.675, 116.28, 103.53])
+        # std = torch.tensor([58.395, 57.12, 57.375])
+        # img1 = img[0].detach().cpu().permute((1, 2, 0)) * std + mean
+        # import numpy as np
+        # import cv2
+        # img1 = img1.numpy().astype(np.uint8).copy()
+        # img1 = cv2.cvtColor(img1, cv2.COLOR_BGR2RGB)
+        # cv2.imshow("hak_img", img1)
+
         x = self.extract_feat(img)
 
         losses = dict()
@@ -184,7 +194,7 @@ class TwoStageDetectorRbbox(BaseDetector, RPNTestMixin, BBoxTestMixin,
         else:
             proposal_list = proposals
 
-        roi_losses = self.roi_head.forward_train(x, img_metas, proposal_list,
+        roi_losses = self.roi_head.forward_train(img, x, img_metas, proposal_list,
                                                  gt_bboxes, gt_labels,
                                                  gt_bboxes_ignore, gt_masks,
                                                  **kwargs)

@@ -160,6 +160,8 @@ train_pipeline = [
     dict(type="LoadAnnotations",
          with_mask=True,
          with_label=True,
+         # with_rbbox=True,
+         # poly2mask=False,
          ),
     dict(
         type="Sequential",
@@ -192,7 +194,7 @@ train_pipeline = [
     dict(type="DefaultFormatBundle"),
     dict(
         type="Collect",
-        keys=["img", "gt_bboxes", "gt_labels", "gt_masks"],
+        keys=["img", "gt_bboxes", "gt_labels", "gt_masks", ],
         meta_keys=(
             "filename",
             "ori_shape",
@@ -206,7 +208,7 @@ train_pipeline = [
 ]
 
 data = dict(
-    imgs_per_gpu=1,
+    imgs_per_gpu=2,
     workers_per_gpu=0,
 
     train=dict(
@@ -254,7 +256,7 @@ log_config = dict(
 total_epochs = 100
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
-work_dir = './work_dirs/faster_rcnn_obb_r50_fpn_1x_fair1m_5classes_few_shot_test_bb_input'
+work_dir = './work_dirs/faster_rcnn_obb_r50_fpn_1x_fair1m_5classes_few_shot_v6'
 load_from = None
 resume_from = None
 workflow = [('train', 1)]

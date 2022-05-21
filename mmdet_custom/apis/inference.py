@@ -142,7 +142,9 @@ def show_result(img, result, class_names, score_thr=0.3, out_file=None):
         show=out_file is None,
         out_file=out_file)
 
-def draw_poly_detections(img, detections, class_names, scale, threshold=0.2, putText=True,showStart=False, colormap=None):
+
+def draw_poly_detections(img, detections, class_names, scale, threshold=0.2, putText=True, showStart=False,
+                         colormap=None):
     """
 
     :param img:
@@ -164,7 +166,7 @@ def draw_poly_detections(img, detections, class_names, scale, threshold=0.2, put
         if colormap is None:
             color = (random.randint(0, 256), random.randint(0, 256), random.randint(0, 256))
         else:
-            color = colormap[j%len(colormap)]
+            color = colormap[j % len(colormap)]
         try:
             dets = detections[j]
         except:
@@ -178,14 +180,13 @@ def draw_poly_detections(img, detections, class_names, scale, threshold=0.2, put
             if showStart:
                 cv2.circle(img, (bbox[0], bbox[1]), 3, (0, 0, 255), -1)
             for i in range(3):
-                cv2.line(img, (bbox[i * 2], bbox[i * 2 + 1]), (bbox[(i+1) * 2], bbox[(i+1) * 2 + 1]), color=color, thickness=2,lineType=cv2.LINE_AA)
-            cv2.line(img, (bbox[6], bbox[7]), (bbox[0], bbox[1]), color=color, thickness=2,lineType=cv2.LINE_AA)
+                cv2.line(img, (bbox[i * 2], bbox[i * 2 + 1]), (bbox[(i + 1) * 2], bbox[(i + 1) * 2 + 1]), color=color,
+                         thickness=2, lineType=cv2.LINE_AA)
+            cv2.line(img, (bbox[6], bbox[7]), (bbox[0], bbox[1]), color=color, thickness=2, lineType=cv2.LINE_AA)
             if putText:
                 cv2.putText(img, '%s %.3f' % (class_names[j], score), (bbox[0], bbox[1] + 10),
                             color=color_white, fontFace=cv2.FONT_HERSHEY_COMPLEX, fontScale=0.5)
     return img
-
-
 
 #  Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.399
 #  Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.735

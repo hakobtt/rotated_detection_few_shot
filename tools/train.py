@@ -149,7 +149,6 @@ def main():
         cfg,
         distributed=distributed,
         validate=args.validate,
-
     )
 
 

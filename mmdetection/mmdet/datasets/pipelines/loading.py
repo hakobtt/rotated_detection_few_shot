@@ -6,6 +6,7 @@ import numpy as np
 import pycocotools.mask as maskUtils
 
 from mmdet.core import BitmapMasks, PolygonMasks
+
 from ..builder import PIPELINES
 
 try:
@@ -221,17 +222,34 @@ class LoadAnnotations:
     def __init__(self,
                  with_bbox=True,
                  with_label=True,
+                 with_rbbox=True,
                  with_mask=False,
                  with_seg=False,
                  poly2mask=True,
                  file_client_args=dict(backend='disk')):
         self.with_bbox = with_bbox
+        self.with_rbbox = with_rbbox
         self.with_label = with_label
         self.with_mask = with_mask
         self.with_seg = with_seg
         self.poly2mask = poly2mask
         self.file_client_args = file_client_args.copy()
         self.file_client = None
+
+    def _load_rbboxes(self, results):
+        ann_info = results['ann_info']
+        mask_polys = ann_info['mask_polys'].copy()
+        poly_count = len(mask_polys)
+        polys = np.array(mask_polys).reshape((poly_count, 4, 2))
+        from mmdet_custom.core.bbox.transforms_rbbox import \
+             get_best_begin_point, polygonToRotRectangle_batch
+
+
+        pos_gt_bp_polys = get_best_begin_point(polys)
+        rbbox = polygonToRotRectangle_batch(pos_gt_bp_polys, False)
+        results['rbboxes'] = rbbox
+
+        return results
 
     def _load_bboxes(self, results):
         """Private function to load bounding box annotations.
@@ -371,6 +389,9 @@ class LoadAnnotations:
             results = self._load_bboxes(results)
             if results is None:
                 return None
+        if self.with_rbbox:
+            results = self._load_rbboxes(results)
+
         if self.with_label:
             results = self._load_labels(results)
         if self.with_mask:
