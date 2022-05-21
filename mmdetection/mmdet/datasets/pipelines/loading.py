@@ -6,6 +6,7 @@ import numpy as np
 import pycocotools.mask as maskUtils
 
 from mmdet.core import BitmapMasks, PolygonMasks
+from mmdet_custom.core import mask2poly
 
 from ..builder import PIPELINES
 
@@ -342,10 +343,12 @@ class LoadAnnotations:
 
         h, w = results['img_info']['height'], results['img_info']['width']
         gt_masks = results['ann_info']['masks']
+
         if self.poly2mask:
             gt_masks = BitmapMasks(
                 [self._poly2mask(mask, h, w) for mask in gt_masks], h, w)
         else:
+
             gt_masks = PolygonMasks(
                 [self.process_polygons(polygons) for polygons in gt_masks], h,
                 w)

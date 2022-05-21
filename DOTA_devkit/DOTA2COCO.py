@@ -59,7 +59,7 @@ def DOTA2COCOTrain(srcpath, destfile, class_map: dict, class_names, difficult='2
             # annotations
             objects = util.pars_fair1_json2(file)
 
-            show_data = False
+            show_data = True
             if show_data:
                 import numpy as np
                 import random

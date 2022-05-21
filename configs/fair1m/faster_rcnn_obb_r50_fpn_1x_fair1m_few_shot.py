@@ -161,7 +161,7 @@ train_pipeline = [
          with_mask=True,
          with_label=True,
          # with_rbbox=True,
-         # poly2mask=False,
+         poly2mask=False,
          ),
     dict(
         type="Sequential",
@@ -256,7 +256,7 @@ log_config = dict(
 total_epochs = 100
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
-work_dir = './work_dirs/faster_rcnn_obb_r50_fpn_1x_fair1m_5classes_few_shot_v6'
+work_dir = './work_dirs/faster_rcnn_obb_r50_fpn_1x_fair1m_5classes_few_shot_v10'
 load_from = None
 resume_from = None
 workflow = [('train', 1)]

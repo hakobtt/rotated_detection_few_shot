@@ -64,7 +64,7 @@ class_names = ["airplane", "ship", "vehicle", "court", "road"]
 
 def parse_args():
     parser = argparse.ArgumentParser(description='prepare dota1')
-    parser.add_argument('--srcpath', default='/home/dingjian/project/dota1_5')
+    parser.add_argument('--srcpath', default='gaofen_data/')
     parser.add_argument('--dstpath', default=r'gaofen_data/fair1_1000',
                         help='prepare data')
     args = parser.parse_args()
@@ -141,13 +141,13 @@ def prepare(srcpath, dstpath):
     #                                                )
     # split_train.splitdata(1)
     #
-    # split_val = ImgSplit_multi_process.splitbase(os.path.join(srcpath, 'val'),
-    #                                              valPath,
-    #                                              gap=200,
-    #                                              subsize=sub_size,
-    #                                              num_process=32
-    #                                              )
-    # split_val.splitdata(1)
+    split_val = ImgSplit_multi_process.splitbase(os.path.join(srcpath, 'val'),
+                                                 valPath,
+                                                 gap=200,
+                                                 subsize=sub_size,
+                                                 num_process=32
+                                                 )
+    split_val.splitdata(1)
     #
     # split_test = SplitOnlyImage_multi_process.splitbase(os.path.join(srcpath, 'test', 'images'),
     #                                                     os.path.join(testPath, 'images'),
@@ -159,8 +159,8 @@ def prepare(srcpath, dstpath):
 
     DOTA2COCOTrain(valPath, os.path.join(valPath, f'val{sub_size}_5classes.json'), class_map, class_names,
                    difficult='-1')
-    DOTA2COCOTrain(trainPath, os.path.join(trainPath, f'train{sub_size}_5classes.json'), class_map, class_names,
-                   difficult='-1')
+    # DOTA2COCOTrain(trainPath, os.path.join(trainPath, f'train{sub_size}_5classes.json'), class_map, class_names,
+    #                difficult='-1')
     # DOTA2COCOTest(testPath, os.path.join(testPath, f'test{sub_size}_5classes.json'), class_map, class_names)
 
 

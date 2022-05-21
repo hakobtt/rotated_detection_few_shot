@@ -85,24 +85,13 @@ def bbox_target_rbbox_single(
     bbox_targets = pos_bboxes.new_zeros(num_samples, 5)
     bbox_weights = pos_bboxes.new_zeros(num_samples, 5)
 
-    pos_gt_masks = gt_masks[pos_assigned_gt_inds.cpu().numpy()]
-    pos_gt_polys = mask2poly(pos_gt_masks)
+    # pos_gt_masks = gt_masks[pos_assigned_gt_inds.cpu().numpy()]
+    # pos_gt_polys = mask2poly(pos_gt_masks)
 
-    # pos_gt_polys = gt_masks[pos_assigned_gt_inds.cpu().numpy()].masks
-    # pos_gt_polys = [p[0].reshape((4, 2)) for p in pos_gt_polys]
+    pos_gt_polys = gt_masks[pos_assigned_gt_inds.cpu().numpy()].masks
+    pos_gt_polys = [p[0].reshape((4, 2)) for p in pos_gt_polys]
 
-    # TODO: optimizer it
-
-    # if len(pos_gt_polys) == 0:
-    #     import pdb
-    #     pdb.set_trace()
-    # print('pos_gt_polys: ', pos_gt_polys)
     pos_gt_bp_polys = get_best_begin_point(pos_gt_polys)
-
-    # print('pos_gt_bp_polys: ', pos_gt_bp_polys)
-    # TODO optimizer it
-    # import pdb
-    # pdb.set_trace()
 
     pos_gt_obbs = torch.from_numpy(polygonToRotRectangle_batch(pos_gt_bp_polys, with_module)).to(pos_bboxes.device)
     # pos_gt_obbs = gt_masks[pos_assigned_gt_inds.cpu().numpy()]

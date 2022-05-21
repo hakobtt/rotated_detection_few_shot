@@ -126,6 +126,7 @@ class splitbase():
             cv2.imwrite(outdir, outimg)
         else:
             cv2.imwrite(outdir, subimg)
+        return outimg
 
     def GetPoly4FromPoly5(self, poly):
         distances = [cal_line_length((poly[i * 2], poly[i * 2 + 1]), (poly[(i + 1) * 2], poly[(i + 1) * 2 + 1])) for i
@@ -155,8 +156,17 @@ class splitbase():
         mask_poly = []
         imgpoly = shgeo.Polygon([(left, up), (right, up), (right, down),
                                  (left, down)])
+        # for obj in objects:
+        #     pts = np.array(obj['poly'], np.int32).reshape((4, 2))
+        #     pts = pts.reshape((-1, 1, 2))
+        #     cv2.polylines(resizeimg, [pts], True, [random.randint(0, 255) for _ in range(2)], 2)
+        # cv2.imshow("img1", resizeimg.astype(np.uint8))
+        # if cv2.waitKey(1) == 27:
+        #     exit()
         with open(outdir, 'w') as f_out:
             annotations = []
+
+
             for obj in objects:
                 annotation = {}
                 annotation['name'] = obj['name']
@@ -168,7 +178,7 @@ class splitbase():
                 if (gtpoly.area <= 0):
                     continue
                 inter_poly, half_iou = self.calchalf_iou(gtpoly, imgpoly)
-
+                inter_poly = gtpoly
                 # print('writing...')
                 if (half_iou == 1):
                     polyInsub = self.polyorig2sub(left, up, obj['poly'])
@@ -212,11 +222,21 @@ class splitbase():
 
                     if not (half_iou > self.thresh):
                         annotation['difficult'] = 2
-                    annotations.append(annotation)
-            json.dump(annotations,f_out)
-                # else:
-                #   mask_poly.append(inter_poly)
-        self.saveimagepatches(resizeimg, subimgname, left, up)
+
+
+            json.dump(annotations, f_out)
+            # else:
+            #   mask_poly.append(inter_poly)
+
+        out_img = self.saveimagepatches(resizeimg, subimgname, left, up)
+        annotations.append(annotation)
+        # for obj in annotations:
+        #     pts = np.array(obj['poly'], np.int32).reshape((4, 2))
+        #     pts = pts.reshape((-1, 1, 2))
+        #     cv2.polylines(out_img, [pts], True, [random.randint(0, 255) for _ in range(2)], 2)
+        # cv2.imshow("img", out_img.astype(np.uint8))
+        # if cv2.waitKey(0) == 27:
+        #     exit()
 
     def SplitSingle(self, name, rate, extent):
         """
@@ -244,14 +264,7 @@ class splitbase():
             resizeimg = cv2.resize(img, None, fx=rate, fy=rate, interpolation=cv2.INTER_CUBIC)
         else:
             resizeimg = img
-        # for obj in objects:
-        #     pts = np.array(obj['poly'], np.int32).reshape((4, 2))
-        #     pts = pts.reshape((-1, 1, 2))
-        #     cv2.polylines(img, [pts], True, [random.randint(0, 255) for _ in range(2)], 2)
-        #
-        # cv2.imshow("img", img)
-        # if cv2.waitKey(0) == 27:
-        #     exit()
+
         outbasename = name + '__' + str(rate) + '__'
         weight = np.shape(resizeimg)[1]
         height = np.shape(resizeimg)[0]
@@ -290,10 +303,11 @@ class splitbase():
         imagenames = [util.custombasename(x) for x in imagelist if (util.custombasename(x) != 'Thumbs')]
 
         worker = partial(self.SplitSingle, rate=rate, extent=self.ext)
+        # for img_name in imagenames:
+        #     self.SplitSingle(img_name,rate=rate, extent=self.ext)
         self.pool.map(worker, imagenames[:])
         # for name in imagenames:
         #     self.SplitSingle(name, rate, self.ext)
-
 
     def __getstate__(self):
         self_dict = self.__dict__.copy()

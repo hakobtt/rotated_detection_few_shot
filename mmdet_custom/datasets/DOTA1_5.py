@@ -1,5 +1,8 @@
+from mmdet.core import BitmapMasks
 from mmdet.datasets import CocoDataset
 import numpy as np
+
+from mmdet_custom.core.bbox.transforms_rbbox import mask2poly
 
 
 class DOTA1_5Dataset(CocoDataset):
@@ -24,7 +27,11 @@ class DOTA1_5Dataset_v2(CocoDataset):
     # Note! same with DOTA2_v3
     CLASSES = class_names
 
-    def _parse_ann_info(self, img_info, ann_info,with_mask=True):
+    def __init__(self, **kwargs):
+        super(DOTA1_5Dataset_v2, self).__init__(**kwargs)
+        self.ann_cache = {}
+
+    def _parse_ann_info(self, img_info, ann_info, with_mask=True):
         """Parse bbox and mask annotation.
 
         Args:
@@ -35,6 +42,8 @@ class DOTA1_5Dataset_v2(CocoDataset):
             dict: A dict containing the following keys: bboxes, bboxes_ignore,
                 labels, masks, mask_polys, poly_lens.
         """
+        if img_info['id'] in self.ann_cache:
+            return self.ann_cache[img_info['id']]
         gt_bboxes = []
         gt_labels = []
         gt_bboxes_ignore = []
@@ -83,11 +92,21 @@ class DOTA1_5Dataset_v2(CocoDataset):
         ann['gt_bboxes'] = ann["bboxes"]
         if with_mask:
             # ann['masks'] = gt_masks
-            ann['masks'] = gt_mask_polys
+            # bit_masks = BitmapMasks(
+            #     [self._poly2mask(mask, h, w) for mask in gt_mask_polys], h, w)
+            # if img_info['id'] in self.mask_cache:
+            #     new_gt_polys = self.mask_cache[img_info['id']]
+            # else:
+            new_polyes = mask2poly(gt_masks)
+            new_gt_polys = [[mask.flatten()] for mask in new_polyes]
+            # self.mask_cache[img_info['id']] = new_gt_polys
+
+            ann['masks'] = new_gt_polys
 
             # poly format is not used in the current implementation
             ann['mask_polys'] = gt_mask_polys
             ann['poly_lens'] = gt_poly_lens
+        self.ann_cache[img_info['id']] = ann
         return ann
 
 
