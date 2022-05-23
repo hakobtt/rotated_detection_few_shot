@@ -145,7 +145,7 @@ test_pipeline = [
         flip=False,
         transforms=[
             dict(type="Resize", keep_ratio=True),
-            # dict(type="RandomFlip"),
+            dict(type="RandomFlip"),
             dict(type="Normalize", **img_norm_cfg),
             dict(type="Pad", size_divisor=32),
             dict(type="ImageToTensor", keys=["img"]),
@@ -166,23 +166,23 @@ train_pipeline = [
 
         transforms=[
             dict(type="RandFlip", flip_ratio=0.5),
-            # dict(
-            #     type="OneOf",
-            #     transforms=[
-            #         dict(type=k)
-            #         for k in [
-            #             "Identity",
-            #             "AutoContrast",
-            #             "RandEqualize",
-            #             "RandSolarize",
-            #             "RandColor",
-            #             "RandContrast",
-            #             "RandBrightness",
-            #             "RandSharpness",
-            #             "RandPosterize",
-            #         ]
-            #     ],
-            # ),
+            dict(
+                type="OneOf",
+                transforms=[
+                    dict(type=k)
+                    for k in [
+                        "Identity",
+                        "AutoContrast",
+                        "RandEqualize",
+                        "RandSolarize",
+                        "RandColor",
+                        "RandContrast",
+                        "RandBrightness",
+                        "RandSharpness",
+                        "RandPosterize",
+                    ]
+                ],
+            ),
         ],
         record=True,
     ),

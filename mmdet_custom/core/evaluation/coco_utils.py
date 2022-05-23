@@ -181,7 +181,7 @@ def segm2json(dataset, results):
                 data['image_id'] = img_id
                 data['bbox'] = segm_to_xywh(det_data[i][:-1])
                 data['score'] = float(det_data[i][-1])
-                data['category_id'] = dataset.cat_ids[label]
+                data['category_id'] = dataset.cat_ids[label - 1]
                 # segms[i]['counts'] = segms[i]['counts'].decode()
                 data['segmentation'] = [det_data[i].tolist()[:-1]]
                 json_results.append(data)

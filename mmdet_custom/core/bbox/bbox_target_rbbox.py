@@ -7,7 +7,7 @@ from ..utils import multi_apply
 
 
 def bbox_target_rbbox(img,
-        pos_bboxes_list,
+                      pos_bboxes_list,
                       neg_bboxes_list,
                       pos_assigned_gt_inds_list,
                       gt_masks_list,
@@ -19,7 +19,6 @@ def bbox_target_rbbox(img,
                       concat=True,
                       with_module=True,
                       hbb_trans='hbb2obb_v2'):
-
     # import pdb
     # pdb.set_trace()
     labels, label_weights, bbox_targets, bbox_weights = multi_apply(
@@ -46,18 +45,18 @@ def bbox_target_rbbox(img,
 
 
 def bbox_target_rbbox_single(
-            img,
+        img,
         pos_bboxes,
-                             neg_bboxes,
-                             pos_assigned_gt_inds,
-                             gt_masks,
-                             pos_gt_labels,
-                             cfg,
-                             reg_classes=1,
-                             target_means=[.0, .0, .0, .0, .0],
-                             target_stds=[1.0, 1.0, 1.0, 1.0, 1.0],
-                             with_module=True,
-                             hbb_trans='hbb2obb_v2'):
+        neg_bboxes,
+        pos_assigned_gt_inds,
+        gt_masks,
+        pos_gt_labels,
+        cfg,
+        reg_classes=1,
+        target_means=[.0, .0, .0, .0, .0],
+        target_stds=[1.0, 1.0, 1.0, 1.0, 1.0],
+        with_module=True,
+        hbb_trans='hbb2obb_v2'):
     """
 
     :param pos_bboxes: Tensor, shape (n, 4)
@@ -93,8 +92,8 @@ def bbox_target_rbbox_single(
     # import pdb
     # pdb.set_trace()
     pos_gt_obbs = torch.from_numpy(polygonToRotRectangle_batch(pos_gt_bp_polys, with_module)).to(pos_bboxes.device)
-    show_data = True
-    if show_data:
+    show_data = False
+    if show_data and img is not None:
         mean = torch.tensor([123.675, 116.28, 103.53])
         std = torch.tensor([58.395, 57.12, 57.375])
         img1 = img.detach().cpu().permute((1, 2, 0)) * std + mean
@@ -104,12 +103,17 @@ def bbox_target_rbbox_single(
         img1 = cv2.cvtColor(img1, cv2.COLOR_BGR2RGB)
         polys = RotBox2Polys(pos_gt_obbs.cpu().numpy())
         color = (255, 0, 0)
-        for bbox in polys:
+        my_labels = pos_gt_labels.detach().cpu().numpy()
+        for bbox, label in zip(polys, my_labels):
             bbox = bbox.astype(int).flatten()
             for i in range(3):
                 cv2.line(img1, (bbox[i * 2], bbox[i * 2 + 1]), (bbox[(i + 1) * 2], bbox[(i + 1) * 2 + 1]), color=color,
                          thickness=2, lineType=cv2.LINE_AA)
             cv2.line(img1, (bbox[6], bbox[7]), (bbox[0], bbox[1]), color=color, thickness=2, lineType=cv2.LINE_AA)
+            class_names = ["airplane", "ship", "vehicle", "court", "road"]
+            # print(class_names[label - 1], label - 1)
+            cv2.putText(img1, class_names[label - 1], (bbox[0], bbox[1] + 10),
+                        color=(0, 255, 255), fontFace=cv2.FONT_HERSHEY_COMPLEX, fontScale=0.5)
 
         cv2.imshow("img1", img1)
         cv2.waitKey(0)

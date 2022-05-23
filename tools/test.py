@@ -55,7 +55,7 @@ def single_gpu_test(model, data_loader, show=True, log_dir=None):
             img = img.detach().cpu().numpy().astype(np.uint8).copy()
             img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
-            img = draw_poly_detections(img, result, ["airplane", "ship", "vehicle", "court", "road"], scale=1,
+            img = draw_poly_detections(img, result, ["","airplane", "ship", "vehicle", "court", "road"], scale=1,
                                        threshold=0.2,
                                        )
             cv2.imshow("img", img)
@@ -204,13 +204,14 @@ def main():
     # build the model and load checkpoint
 
     model = build_detector(cfg.model, train_cfg=None, test_cfg=cfg.test_cfg)
+
     checkpoint = load_checkpoint(model, args.checkpoint, map_location='cpu')
     # old versions did not save class info in checkpoints, this walkaround is
     # for backward compatibility
-    if 'CLASSES' in checkpoint['meta']:
-        model.CLASSES = checkpoint['meta']['CLASSES']
-    else:
-        model.CLASSES = dataset.CLASSES
+    # if 'CLASSES' in checkpoint['meta']:
+    #     model.CLASSES = checkpoint['meta']['CLASSES']
+    # else:
+    #     model.CLASSES = dataset.CLASSES
     model.CLASSES = ["airplane", "ship", "vehicle", "court", "road"]
     if not distributed:
         model = MMDataParallel(model, device_ids=[0])

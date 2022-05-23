@@ -120,12 +120,12 @@ data_root = f'gaofen_data/fair1_{tile_side_len}/'
 # img_norm_cfg = dict(
 #     mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
 data = dict(
-    imgs_per_gpu=5,
+    imgs_per_gpu=3,
     workers_per_gpu=0,
     train=dict(
         sup=dict(
             type=dataset_type,
-            ann_file=data_root + f'train{tile_side_len}/few_shot_200.json',
+            ann_file=data_root + f'train{tile_side_len}/few_shot_8.json',
             img_prefix=data_root + f'train{tile_side_len}/images/',
         ),
         unsup=dict(
@@ -149,7 +149,7 @@ data = dict(
 
     sampler=dict(
         train=dict(
-            sample_ratio=[1, 4],
+            sample_ratio=[1, 2],
         )
     ),
 )
@@ -176,10 +176,10 @@ log_config = dict(
 )
 # yapf:enable
 # runtime settings
-runner = dict(_delete_=True, type="IterBasedRunner", max_iters=180000)
+runner = dict(_delete_=True, type="IterBasedRunner", max_iters=100000)
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
-work_dir = './work_dirs/faster_rcnn_obb_r50_fpn_1x_fair1m_semi_supervised'
+work_dir = './work_dirs/faster_rcnn_obb_r50_fpn_1x_fair1m_semi_supervised_v3'
 load_from = None
 resume_from = None
 workflow = [('train', 1)]
