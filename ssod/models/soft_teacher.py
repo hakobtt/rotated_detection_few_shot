@@ -52,6 +52,7 @@ def make_masks(img_polys, img_meta):
 @DETECTORS.register_module()
 class SoftTeacher(MultiSteamDetector):
     def __init__(self, model: dict, train_cfg=None, test_cfg=None):
+        self.CLASSES = ["airplane", "ship", "vehicle", "court", "road"]
         teacher = build_detector(
             model,
         )
@@ -270,15 +271,15 @@ class SoftTeacher(MultiSteamDetector):
             proposal_list = self.student.rpn_head.get_bboxes(
                 *rpn_out, img_metas=img_metas, cfg=proposal_cfg
             )
-            log_image_with_boxes(
-                "rpn",
-                student_info["img"][0],
-                pseudo_bboxes[0][:, :4],
-                bbox_tag="rpn_pseudo_label",
-                scores=pseudo_bboxes[0][:, 4],
-                interval=500,
-                img_norm_cfg=student_info["img_metas"][0]["img_norm_cfg"],
-            )
+            # log_image_with_boxes(
+            #     "rpn",
+            #     student_info["img"][0],
+            #     pseudo_bboxes[0][:, :4],
+            #     bbox_tag="rpn_pseudo_label",
+            #     scores=pseudo_bboxes[0][:, 4],
+            #     interval=500,
+            #     img_norm_cfg=student_info["img_metas"][0]["img_norm_cfg"],
+            # )
             return losses, proposal_list
         else:
             return {}, None
@@ -352,17 +353,17 @@ class SoftTeacher(MultiSteamDetector):
         loss["rbbox_loss_bbox"] = loss["rbbox_loss_bbox"].sum() / max(
             bbox_targets[1].size()[0], 1.0
         )
-        if len(gt_bboxes[0]) > 0:
-            log_image_with_boxes(
-                "rcnn_cls",
-                student_info["img"][0],
-                gt_bboxes[0],
-                bbox_tag="pseudo_label",
-                labels=gt_labels[0],
-                class_names=self.CLASSES,
-                interval=500,
-                img_norm_cfg=student_info["img_metas"][0]["img_norm_cfg"],
-            )
+        # if len(gt_bboxes[0]) > 0:
+        #     log_image_with_boxes(
+        #         "rcnn_cls",
+        #         student_info["img"][0],
+        #         gt_bboxes[0],
+        #         bbox_tag="pseudo_label",
+        #         labels=gt_labels[0],
+        #         class_names=self.CLASSES,
+        #         interval=500,
+        #         img_norm_cfg=student_info["img_metas"][0]["img_norm_cfg"],
+        #     )
         return loss
 
     def unsup_rcnn_reg_loss(
@@ -392,17 +393,17 @@ class SoftTeacher(MultiSteamDetector):
                                                               feat, img_metas, proposal_list, gt_bboxes, gt_labels,
                                                               gt_masks=gt_masks, **kwargs
                                                               )["rbbox_loss_bbox"]
-        if len(gt_bboxes[0]) > 0:
-            log_image_with_boxes(
-                "rcnn_reg",
-                student_info["img"][0],
-                gt_bboxes[0],
-                bbox_tag="pseudo_label",
-                labels=gt_labels[0],
-                class_names=self.CLASSES,
-                interval=500,
-                img_norm_cfg=student_info["img_metas"][0]["img_norm_cfg"],
-            )
+        # if len(gt_bboxes[0]) > 0:
+        #     log_image_with_boxes(
+        #         "rcnn_reg",
+        #         student_info["img"][0],
+        #         gt_bboxes[0],
+        #         bbox_tag="pseudo_label",
+        #         labels=gt_labels[0],
+        #         class_names=self.CLASSES,
+        #         interval=500,
+        #         img_norm_cfg=student_info["img_metas"][0]["img_norm_cfg"],
+        #     )
         return {"rbbox_loss_bbox": rbbox_loss_bbox}
 
     def get_sampling_result(

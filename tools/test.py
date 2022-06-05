@@ -23,7 +23,7 @@ from mmdet_custom.models import *
 def get_time_str():
     return time.strftime('%Y%m%d_%H%M%S', time.localtime())
 
-
+# ./work_dirs/faster_rcnn_obb_r50_fpn_1x_fair1m_5classes_few_shot_more_epochs_500/epoch_500.pth
 def single_gpu_test(model, data_loader, show=True, log_dir=None):
     model.eval()
     results = []
@@ -55,7 +55,7 @@ def single_gpu_test(model, data_loader, show=True, log_dir=None):
             img = img.detach().cpu().numpy().astype(np.uint8).copy()
             img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
-            img = draw_poly_detections(img, result, ["","airplane", "ship", "vehicle", "court", "road"], scale=1,
+            img = draw_poly_detections(img, result, ["", "airplane", "ship", "vehicle", "court", "road"], scale=1,
                                        threshold=0.2,
                                        )
             cv2.imshow("img", img)
@@ -165,7 +165,7 @@ def parse_args():
 # --eval
 # bbox
 # --out
-# ./output.pkl
+# ./output_ssd.pkl
 
 def main():
     args = parse_args()
@@ -212,6 +212,8 @@ def main():
     #     model.CLASSES = checkpoint['meta']['CLASSES']
     # else:
     #     model.CLASSES = dataset.CLASSES
+
+
     model.CLASSES = ["airplane", "ship", "vehicle", "court", "road"]
     if not distributed:
         model = MMDataParallel(model, device_ids=[0])

@@ -173,11 +173,11 @@ def main():
     )
     model.init_weights()
     checkpoint_path = "work_dirs/faster_rcnn_obb_r50_fpn_1x_fair1m_5classes_few_shot_test_bb_input/epoch_100.pth"
-    checkpoint_path = "work_dirs/faster_rcnn_obb_r50_fpn_1x_fair1m_semi_supervised_v3/latest.pth"
+    checkpoint_path = "work_dirs/faster_rcnn_obb_r50_fpn_1x_fair1m_semi_supervised_v3/iter_45000.pth"
 
     load_checkpoint(model, checkpoint_path, )
-    torch.save(model.teacher.state_dict(), "teacher.pth")
-    torch.save(model.student.state_dict(), "student.pth")
+    torch.save(model.teacher.state_dict(), "teacher_45000.pth")
+    torch.save(model.student.state_dict(), "student_45000.pth")
     exit()
 
     # load_checkpoint(model.student, checkpoint_path, )
@@ -205,6 +205,7 @@ def main():
         timestamp=timestamp,
         meta=meta,
     )
+#
 
 
 if __name__ == "__main__":

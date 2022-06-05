@@ -220,9 +220,9 @@ semi_wrapper = dict(
     model="${model}",
     train_cfg=dict(
         use_teacher_proposal=False,
-        pseudo_label_initial_score_thr=0.45,
-        rpn_pseudo_threshold=0.85,
-        cls_pseudo_threshold=0.85,
+        pseudo_label_initial_score_thr=0.3,
+        rpn_pseudo_threshold=0.8,
+        cls_pseudo_threshold=0.8,
         reg_pseudo_threshold=0.02,
         jitter_times=10,
         jitter_scale=0.06,
@@ -240,8 +240,8 @@ custom_hooks = [
 evaluation = dict(type="SubModulesDistEvalHook", interval=100000)
 optimizer = dict(type="SGD", lr=0.01, momentum=0.9, weight_decay=0.0001)
 lr_config = dict(step=[120000, 160000])
-runner = dict(_delete_=True, type="IterBasedRunner", max_iters=180000)
-checkpoint_config = dict(by_epoch=False, interval=4000, max_keep_ckpts=40)
+runner = dict(_delete_=True, type="IterBasedRunner", max_iters=100000)
+checkpoint_config = dict(by_epoch=False, interval=1000, max_keep_ckpts=80)
 
 fp16 = dict(loss_scale="dynamic")
 

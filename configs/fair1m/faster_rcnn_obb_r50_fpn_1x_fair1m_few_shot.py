@@ -211,7 +211,7 @@ data = dict(
 
     train=dict(
         type=dataset_type,
-        ann_file=data_root + f'train{tile_side_len}/few_shot_8.json',
+        ann_file=data_root + f'train{tile_side_len}/train1000_5classes.json',
         img_prefix=data_root + f'train{tile_side_len}/images/',
         pipeline=train_pipeline,
     ),
@@ -224,7 +224,7 @@ data = dict(
     ),
     test=dict(
         type=dataset_type,
-        ann_file=data_root + f'val{tile_side_len}/few_shot_50.json',
+        ann_file=data_root + f'val{tile_side_len}/filtered_500.json',
         img_prefix=data_root + f'val{tile_side_len}/images',
         pipeline=test_pipeline,
     ))
@@ -236,12 +236,12 @@ optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
 lr_config = dict(
     policy='step',
     warmup='linear',
-    warmup_iters=100,
+    warmup_iters=500,
     warmup_ratio=1.0 / 3,
     step=[8, 11],
 
 )
-checkpoint_config = dict(interval=2)
+checkpoint_config = dict(interval=1)
 # yapf:disable
 log_config = dict(
     interval=20,
@@ -251,10 +251,10 @@ log_config = dict(
     ])
 # yapf:enable
 # runtime settings
-total_epochs = 100
+total_epochs = 12
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
-work_dir = './work_dirs/faster_rcnn_obb_r50_fpn_1x_fair1m_5classes_few_shot_v1'
+work_dir = './work_dirs/faster_rcnn_obb_r50_fpn_1x_fair1m_5classes_full_data'
 load_from = None
 resume_from = None
 workflow = [('train', 1)]
