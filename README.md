@@ -34,12 +34,12 @@ You might still need to install several other dependencies.
 
 
 
-To run training
+Training
 ```shell
 python3 ssod/tools/train.py ./configs/fair1m/soft_teacher/faster_rcnn_obb_r50_fpn_1x_fair1m_few_shot.py 
 ```
 
-To run Testing
+Testing
 ```shell
 python3 ssod/tools/test.py ./configs/fair1m/soft_teacher/faster_rcnn_obb_r50_fpn_1x_fair1m_few_shot.py your/model/path 
 ```
