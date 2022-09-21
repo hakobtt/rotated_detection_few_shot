@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="VcsDirectoryMappings">
+    <mapping directory="$PROJECT_DIR$" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/DALL-E" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/class_analyses/dino" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/cocoapi" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/dino" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/mmdetection" vcs="Git" />
+  </component>
+</project>

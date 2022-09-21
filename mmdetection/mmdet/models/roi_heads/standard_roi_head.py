@@ -48,7 +48,7 @@ class StandardRoIHead(BaseRoIHead, BBoxTestMixin, MaskTestMixin):
         if self.with_mask:
             mask_rois = rois[:100]
             mask_results = self._mask_forward(x, mask_rois)
-            outs = outs + (mask_results['mask_pred'],)
+            outs = outs + (mask_results['mask_pred'], )
         return outs
 
     def forward_train(self,
@@ -103,7 +103,7 @@ class StandardRoIHead(BaseRoIHead, BBoxTestMixin, MaskTestMixin):
         # bbox head forward and loss
         if self.with_bbox:
             bbox_results = self._bbox_forward_train(img, x, sampling_results,
-                                                    gt_bboxes, gt_masks, gt_labels,
+                                                    gt_bboxes,gt_masks, gt_labels,
                                                     img_metas)
             losses.update(bbox_results['loss_bbox'])
 
@@ -129,7 +129,7 @@ class StandardRoIHead(BaseRoIHead, BBoxTestMixin, MaskTestMixin):
             cls_score=cls_score, bbox_pred=bbox_pred, bbox_feats=bbox_feats)
         return bbox_results
 
-    def _bbox_forward_train(self, img, x, sampling_results, gt_bboxes, gt_masks, gt_labels,
+    def _bbox_forward_train(self,img, x, sampling_results, gt_bboxes,gt_masks, gt_labels,
                             img_metas):
         """Run forward function and calculate loss for box head in training."""
         rois = bbox2roi([res.bboxes for res in sampling_results])
@@ -332,7 +332,7 @@ class StandardRoIHead(BaseRoIHead, BBoxTestMixin, MaskTestMixin):
         det_bboxes = det_bboxes[..., :4]
         batch_index = torch.arange(
             det_bboxes.size(0), device=det_bboxes.device).float().view(
-            -1, 1, 1).expand(det_bboxes.size(0), det_bboxes.size(1), 1)
+                -1, 1, 1).expand(det_bboxes.size(0), det_bboxes.size(1), 1)
         mask_rois = torch.cat([batch_index, det_bboxes], dim=-1)
         mask_rois = mask_rois.view(-1, 5)
         mask_results = self._mask_forward(x, mask_rois)
@@ -373,7 +373,7 @@ class StandardRoIHead(BaseRoIHead, BBoxTestMixin, MaskTestMixin):
 
         batch_index = torch.arange(
             rois.size(0), device=rois.device).float().view(-1, 1, 1).expand(
-            rois.size(0), rois.size(1), 1)
+                rois.size(0), rois.size(1), 1)
 
         rois = torch.cat([batch_index, rois[..., :4]], dim=-1)
         batch_size = rois.shape[0]

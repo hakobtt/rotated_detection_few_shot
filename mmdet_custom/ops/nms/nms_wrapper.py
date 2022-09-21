@@ -1,8 +1,7 @@
 import numpy as np
 import torch
 
-from . import nms_cuda, nms_cpu
-from .soft_nms_cpu import soft_nms_cpu
+
 
 def pesudo_nms(dets, iou_thr):
     keep = torch.range(0, len(dets))

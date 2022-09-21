@@ -85,7 +85,7 @@ class BBoxHeadRbbox(nn.Module):
         bbox_pred = self.fc_reg(x) if self.with_reg else None
         return cls_score, bbox_pred
 
-    def get_targets(self,img, sampling_results, gt_masks, gt_labels,
+    def get_targets(self,img,  sampling_results, gt_masks, gt_labels,
                     rcnn_train_cfg):
         """
         obb target hbb

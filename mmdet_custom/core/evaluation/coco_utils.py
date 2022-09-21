@@ -64,15 +64,69 @@ def coco_eval(result_file, result_types, coco, max_dets=(100, 300, 1000)):
 
         cocoEval = COCOeval(coco, coco_dets, iou_type)
         cocoEval.params.imgIds = img_ids
+
+        # cocoEval._prepare()
+        # # cocoEval.evaluate()
+        # class_map = {
+        #     "airplane": ([1], list(range(1, 13))),
+        #     "ship": ([2], list(range(13, 22))),
+        #     "vehicle": ([3], list(range(22, 32))),
+        #     "court": ([4], list(range(32, 36))),
+        #     "road": ([5], list(range(36, 39))),
+        # }
+        #
+        # for class_name, (dt_cts, gt_cts) in class_map.items():
+        #     sub_cat_statistics = {}  # sub_cat_id: [all_gt_count, all_det_count, all_tp_count]
+        #     for img_id in img_ids:
+        #         ious, dts, gts = cocoEval.computeIoUFineGrained(img_id, gt_cts, dt_cts)
+        #
+        #         for gt in gts:
+        #             if gt['category_id'] not in sub_cat_statistics:
+        #                 sub_cat_statistics[gt['category_id']] = [0, 0, 0]
+        #             sub_cat_statistics[gt['category_id']][0] += 1
+        #         if len(ious) == 0:
+        #             continue
+        #         # for dt in dts:
+        #         #     if gt['category_id'] not in sub_cat_statistics:
+        #         #         sub_cat_statistics = [0, 0, 0]
+        #         #     sub_cat_statistics[gt['category_id']][1] += 1
+        #         iou_thresh = 0.5
+        #         score_thresh = 0.2
+        #         ious = ious.transpose()
+        #         for gt_idx, gt_ious in enumerate(ious):
+        #             for det_idx, iou in enumerate(gt_ious):
+        #                 if iou > iou_thresh and dts[det_idx]['score'] > score_thresh:
+        #                     cat_id = gts[gt_idx]['category_id']
+        #                     sub_cat_statistics[cat_id][2] += 1
+        #                     break
+        #     print(f"================={class_name}==================")
+        #     print(f"{'class_name':<20}  "
+        #           f"{'gt_count' :<10} | "
+        #           f"{'tp_count':<10}  | "
+        #           f"{'percent':<10}  | "
+        #           )
+        #     sub_cat_statistics = dict((k, sub_cat_statistics[k]) for k in sorted(sub_cat_statistics.keys()))
+        #     for sub_cat_id, [gt_count, det_count, tp_count] in sub_cat_statistics.items():
+        #         print(f"{cocoEval.cocoGt.cats[sub_cat_id]['name']:<20}  "
+        #               f"{gt_count :<10} | "
+        #               f"{tp_count:<10}  | "
+        #               f"{f'{100 * tp_count / gt_count:.2f}%':<10}  | "
+        #               )
+        # exit()
+        # cocoEval.accumulate()
+        # cocoEval.summarize()
+
         for _, cat in cats.items():
             print(f"============================{cat['name']}================================")
-            cocoEval.params.catIds = [cat['id'],]
+            cocoEval.params.catIds = [cat['id'], ]
             if res_type == 'proposal':
                 cocoEval.params.useCats = 0
                 cocoEval.params.maxDets = list(max_dets)
+            cocoEval.stats
             cocoEval.evaluate()
             cocoEval.accumulate()
             cocoEval.summarize()
+            print("akop")
 
 
 def fast_eval_recall(results,
@@ -181,7 +235,7 @@ def segm2json(dataset, results):
                 data['image_id'] = img_id
                 data['bbox'] = segm_to_xywh(det_data[i][:-1])
                 data['score'] = float(det_data[i][-1])
-                data['category_id'] = dataset.cat_ids[label]
+                data['category_id'] = dataset.cat_ids[label - 1]
                 # segms[i]['counts'] = segms[i]['counts'].decode()
                 data['segmentation'] = [det_data[i].tolist()[:-1]]
                 json_results.append(data)

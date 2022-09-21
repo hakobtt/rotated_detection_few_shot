@@ -1,6 +1,5 @@
 import numpy as np
 import torch
-from .import poly_nms_cuda
 
 def poly_nms(dets, iou_thr, device_id=None):
     """Dispatch to either CPU or GPU NMS implementations.

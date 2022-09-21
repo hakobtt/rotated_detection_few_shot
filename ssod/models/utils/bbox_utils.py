@@ -41,11 +41,11 @@ def check_is_tensor(obj):
 
 
 def normal_transform_pixel(
-    height: int,
-    width: int,
-    eps: float = 1e-14,
-    device: Optional[torch.device] = None,
-    dtype: Optional[torch.dtype] = None,
+        height: int,
+        width: int,
+        eps: float = 1e-14,
+        device: Optional[torch.device] = None,
+        dtype: Optional[torch.dtype] = None,
 ) -> torch.Tensor:
     tr_mat = torch.tensor(
         [[1.0, 0.0, -1.0], [0.0, 1.0, -1.0], [0.0, 0.0, 1.0]],
@@ -64,15 +64,15 @@ def normal_transform_pixel(
 
 
 def normalize_homography(
-    dst_pix_trans_src_pix: torch.Tensor,
-    dsize_src: Tuple[int, int],
-    dsize_dst: Tuple[int, int],
+        dst_pix_trans_src_pix: torch.Tensor,
+        dsize_src: Tuple[int, int],
+        dsize_dst: Tuple[int, int],
 ) -> torch.Tensor:
     check_is_tensor(dst_pix_trans_src_pix)
 
     if not (
-        len(dst_pix_trans_src_pix.shape) == 3
-        or dst_pix_trans_src_pix.shape[-2:] == (3, 3)
+            len(dst_pix_trans_src_pix.shape) == 3
+            or dst_pix_trans_src_pix.shape[-2:] == (3, 3)
     ):
         raise ValueError(
             "Input dst_pix_trans_src_pix must be a Bx3x3 tensor. Got {}".format(
@@ -97,18 +97,18 @@ def normalize_homography(
 
     # compute chain transformations
     dst_norm_trans_src_norm: torch.Tensor = dst_norm_trans_dst_pix @ (
-        dst_pix_trans_src_pix @ src_pix_trans_src_norm
+            dst_pix_trans_src_pix @ src_pix_trans_src_norm
     )
     return dst_norm_trans_src_norm
 
 
 def warp_affine(
-    src: torch.Tensor,
-    M: torch.Tensor,
-    dsize: Tuple[int, int],
-    mode: str = "bilinear",
-    padding_mode: str = "zeros",
-    align_corners: Optional[bool] = None,
+        src: torch.Tensor,
+        M: torch.Tensor,
+        dsize: Tuple[int, int],
+        mode: str = "bilinear",
+        padding_mode: str = "zeros",
+        align_corners: Optional[bool] = None,
 ) -> torch.Tensor:
     if not isinstance(src, torch.Tensor):
         raise TypeError(
@@ -184,10 +184,39 @@ class Transform2D:
             return bbox
 
     @staticmethod
+    def transform_polygon(
+            plygon: Union[BitmapMasks, List[BitmapMasks]],
+            M: Union[torch.Tensor, List[torch.Tensor]],
+            out_shape: Union[list, List[list]],
+    ):
+        if isinstance(plygon, Sequence):
+            assert len(plygon) == len(M)
+            return [
+                Transform2D.transform_polygon(b, m, o)
+                for b, m, o in zip(plygon, M, out_shape)
+            ]
+        else:
+            if plygon.shape[0] == 0:
+                return plygon
+            score = None
+
+            points = plygon.reshape(
+                -1, 2
+            )
+            points = torch.cat(
+                [points, points.new_ones(points.shape[0], 1)], dim=1
+            )  # n,3
+            points = torch.matmul(M, points.t()).t()
+            points = points[:, :2] / points[:, 2:3]
+            points = points.reshape(-1, 4, 2).reshape(-1, 8)
+
+            return points
+
+    @staticmethod
     def transform_masks(
-        mask: Union[BitmapMasks, List[BitmapMasks]],
-        M: Union[torch.Tensor, List[torch.Tensor]],
-        out_shape: Union[list, List[list]],
+            mask: Union[BitmapMasks, List[BitmapMasks]],
+            M: Union[torch.Tensor, List[torch.Tensor]],
+            out_shape: Union[list, List[list]],
     ):
         if isinstance(mask, Sequence):
             assert len(mask) == len(M)
@@ -207,9 +236,9 @@ class Transform2D:
                     M[None, ...].expand(mask.masks.shape[0], -1, -1),
                     out_shape,
                 )
-                .squeeze(1)
-                .cpu()
-                .numpy(),
+                    .squeeze(1)
+                    .cpu()
+                    .numpy().astype(np.uint8),
                 out_shape[0],
                 out_shape[1],
             )
@@ -230,8 +259,8 @@ class Transform2D:
 
             return (
                 warp_affine(img.float(), M[None, ...], out_shape, mode="nearest")
-                .squeeze()
-                .to(img.dtype)
+                    .squeeze()
+                    .to(img.dtype)
             )
 
 
@@ -242,7 +271,10 @@ def filter_invalid(bbox, label=None, score=None, mask=None, thr=0.0, min_size=0)
         if label is not None:
             label = label[valid]
         if mask is not None:
-            mask = BitmapMasks(mask.masks[valid.cpu().numpy()], mask.height, mask.width)
+            if isinstance(mask, BitmapMasks):
+                mask = BitmapMasks(mask.masks[valid.cpu().numpy()], mask.height, mask.width)
+            else:
+                mask = mask[valid]
     if min_size is not None:
         bw = bbox[:, 2] - bbox[:, 0]
         bh = bbox[:, 3] - bbox[:, 1]
@@ -251,5 +283,8 @@ def filter_invalid(bbox, label=None, score=None, mask=None, thr=0.0, min_size=0)
         if label is not None:
             label = label[valid]
         if mask is not None:
-            mask = BitmapMasks(mask.masks[valid.cpu().numpy()], mask.height, mask.width)
+            if isinstance(mask, BitmapMasks):
+                mask = BitmapMasks(mask.masks[valid.cpu().numpy()], mask.height, mask.width)
+            else:
+                mask = mask[valid]
     return bbox, label, mask

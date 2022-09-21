@@ -145,7 +145,7 @@ test_pipeline = [
         flip=False,
         transforms=[
             dict(type="Resize", keep_ratio=True),
-            # dict(type="RandomFlip"),
+            dict(type="RandomFlip"),
             dict(type="Normalize", **img_norm_cfg),
             dict(type="Pad", size_divisor=32),
             dict(type="ImageToTensor", keys=["img"]),
@@ -160,31 +160,29 @@ train_pipeline = [
     dict(type="LoadAnnotations",
          with_mask=True,
          with_label=True,
-         # with_rbbox=True,
-         poly2mask=False,
          ),
     dict(
         type="Sequential",
 
         transforms=[
             dict(type="RandFlip", flip_ratio=0.5),
-            # dict(
-            #     type="OneOf",
-            #     transforms=[
-            #         dict(type=k)
-            #         for k in [
-            #             "Identity",
-            #             "AutoContrast",
-            #             "RandEqualize",
-            #             "RandSolarize",
-            #             "RandColor",
-            #             "RandContrast",
-            #             "RandBrightness",
-            #             "RandSharpness",
-            #             "RandPosterize",
-            #         ]
-            #     ],
-            # ),
+            dict(
+                type="OneOf",
+                transforms=[
+                    dict(type=k)
+                    for k in [
+                        "Identity",
+                        "AutoContrast",
+                        "RandEqualize",
+                        "RandSolarize",
+                        "RandColor",
+                        "RandContrast",
+                        "RandBrightness",
+                        "RandSharpness",
+                        "RandPosterize",
+                    ]
+                ],
+            ),
         ],
         record=True,
     ),
@@ -194,7 +192,7 @@ train_pipeline = [
     dict(type="DefaultFormatBundle"),
     dict(
         type="Collect",
-        keys=["img", "gt_bboxes", "gt_labels", "gt_masks", ],
+        keys=["img", "gt_bboxes", "gt_labels", "gt_masks"],
         meta_keys=(
             "filename",
             "ori_shape",
@@ -213,7 +211,7 @@ data = dict(
 
     train=dict(
         type=dataset_type,
-        ann_file=data_root + f'train{tile_side_len}/few_shot_8.json',
+        ann_file=data_root + f'train{tile_side_len}/train1000_5classes.json',
         img_prefix=data_root + f'train{tile_side_len}/images/',
         pipeline=train_pipeline,
     ),
@@ -226,7 +224,7 @@ data = dict(
     ),
     test=dict(
         type=dataset_type,
-        ann_file=data_root + f'val{tile_side_len}/few_shot_50.json',
+        ann_file=data_root + f'val{tile_side_len}/filtered_500.json',
         img_prefix=data_root + f'val{tile_side_len}/images',
         pipeline=test_pipeline,
     ))
@@ -238,12 +236,12 @@ optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
 lr_config = dict(
     policy='step',
     warmup='linear',
-    warmup_iters=100,
+    warmup_iters=500,
     warmup_ratio=1.0 / 3,
     step=[8, 11],
 
 )
-checkpoint_config = dict(interval=2)
+checkpoint_config = dict(interval=1)
 # yapf:disable
 log_config = dict(
     interval=20,
@@ -253,10 +251,10 @@ log_config = dict(
     ])
 # yapf:enable
 # runtime settings
-total_epochs = 100
+total_epochs = 12
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
-work_dir = './work_dirs/faster_rcnn_obb_r50_fpn_1x_fair1m_5classes_few_shot_v10'
+work_dir = './work_dirs/faster_rcnn_obb_r50_fpn_1x_fair1m_5classes_full_data'
 load_from = None
 resume_from = None
 workflow = [('train', 1)]

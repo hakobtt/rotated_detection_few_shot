@@ -60,7 +60,7 @@ def multiclass_nms_rbbox(multi_bboxes,
         # import pdb
         # pdb.set_trace()
         cls_labels = multi_bboxes.new_full(
-            (cls_dets.shape[0], ), i - 1, dtype=torch.long)
+            (cls_dets.shape[0], ), i , dtype=torch.long)
         bboxes.append(cls_dets)
         labels.append(cls_labels)
     if bboxes:

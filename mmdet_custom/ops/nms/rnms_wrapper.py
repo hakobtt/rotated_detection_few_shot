@@ -85,7 +85,7 @@ def py_cpu_nms_poly_fast(dets, iou_thr):
             order = order[inds + 1]
             # pdb.set_trace()
             # order = np.concatenate((order_obb, order_hbb), axis=0).astype(np.int)
-
+    dets = dets.astype(np.float32)
     return torch.from_numpy(dets[keep, :]).to(device), torch.from_numpy(np.array(keep)).to(device)
 
 def py_cpu_nms_poly_fast_np(dets, thresh):

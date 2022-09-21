@@ -1,10 +1,9 @@
 Cython
 numpy
-mmcv
 shapely
 tqdm
 matplotlib
-terminaltables
 pycocotools
 pillow==6.2.2
-e2cnn
+prettytable
+tensorboard

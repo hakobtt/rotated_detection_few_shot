@@ -11,18 +11,19 @@ from mmcv.runner import load_checkpoint, get_dist_info
 from mmcv.parallel import MMDataParallel, MMDistributedDataParallel
 
 from mmdet_custom.apis import init_dist, draw_poly_detections
-from mmdet_custom.core import results2json, coco_eval
+from mmdet_custom.core import results2json, coco_eval, RotBox2Polys
 from mmdet_custom.datasets import build_dataloader, get_dataset
 from mmdet.models import build_detector
 import time
 import numpy as np
 
-from  mmdet_custom.models import *
+from mmdet_custom.models import *
+
 
 def get_time_str():
     return time.strftime('%Y%m%d_%H%M%S', time.localtime())
 
-
+# ./work_dirs/faster_rcnn_obb_r50_fpn_1x_fair1m_5classes_few_shot_more_epochs_500/epoch_500.pth
 def single_gpu_test(model, data_loader, show=True, log_dir=None):
     model.eval()
     results = []
@@ -38,7 +39,13 @@ def single_gpu_test(model, data_loader, show=True, log_dir=None):
         # data["img_meta"] = data["img_metas"]
         with torch.no_grad():
             result = model(return_loss=False, rescale=True, **data)
-        results.append(result[0])
+        # polygon_res = []
+        # for rr in result[0]:
+        #     poly = RotBox2Polys(rr)
+        #     polygon_res.append(np.concatenate([poly, rr[:, -1:]], axis=1))
+        # result = polygon_res
+        result = result[0]
+        results.append(result)
         show_res = False
         if show_res:
             std = torch.tensor([58.395, 57.12, 57.375])
@@ -48,7 +55,7 @@ def single_gpu_test(model, data_loader, show=True, log_dir=None):
             img = img.detach().cpu().numpy().astype(np.uint8).copy()
             img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
-            img = draw_poly_detections(img, result[0], ["airplane", "ship", "vehicle", "court", "road"], scale=1,
+            img = draw_poly_detections(img, result, ["", "airplane", "ship", "vehicle", "court", "road"], scale=1,
                                        threshold=0.2,
                                        )
             cv2.imshow("img", img)
@@ -153,13 +160,12 @@ def parse_args():
     return args
 
 
-
 # configs/fair1m/faster_rcnn_obb_r50_fpn_1x_fair1m_few_shot.py
 # work_dirs/faster_rcnn_obb_r50_fpn_1x_fair1m_5classes_few_shot_v1/epoch_90.pth
 # --eval
 # bbox
 # --out
-# ./output.pkl
+# ./output_ssd.pkl
 
 def main():
     args = parse_args()
@@ -195,17 +201,19 @@ def main():
     # coco_eval(result_file, eval_types, dataset.coco)
     # exit()
 
-
     # build the model and load checkpoint
 
     model = build_detector(cfg.model, train_cfg=None, test_cfg=cfg.test_cfg)
+
     checkpoint = load_checkpoint(model, args.checkpoint, map_location='cpu')
     # old versions did not save class info in checkpoints, this walkaround is
     # for backward compatibility
-    if 'CLASSES' in checkpoint['meta']:
-        model.CLASSES = checkpoint['meta']['CLASSES']
-    else:
-        model.CLASSES = dataset.CLASSES
+    # if 'CLASSES' in checkpoint['meta']:
+    #     model.CLASSES = checkpoint['meta']['CLASSES']
+    # else:
+    #     model.CLASSES = dataset.CLASSES
+
+
     model.CLASSES = ["airplane", "ship", "vehicle", "court", "road"]
     if not distributed:
         model = MMDataParallel(model, device_ids=[0])

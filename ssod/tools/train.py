@@ -9,7 +9,7 @@ from logging import log
 import mmcv
 import torch
 from mmcv import Config, DictAction
-from mmcv.runner import get_dist_info, init_dist
+from mmcv.runner import get_dist_info, init_dist, load_checkpoint
 from mmcv.utils import get_git_hash
 from mmdet import __version__
 from mmdet.models import build_detector
@@ -21,6 +21,7 @@ from ssod.utils import patch_config
 from mmdet_custom.datasets import *
 from mmdet_custom.models import *
 from ssod.models import *
+
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Train a detector")
@@ -55,19 +56,19 @@ def parse_args():
         nargs="+",
         action=DictAction,
         help="override some settings in the used config, the key-value pair "
-        "in xxx=yyy format will be merged into config file (deprecate), "
-        "change to --cfg-options instead.",
+             "in xxx=yyy format will be merged into config file (deprecate), "
+             "change to --cfg-options instead.",
     )
     parser.add_argument(
         "--cfg-options",
         nargs="+",
         action=DictAction,
         help="override some settings in the used config, the key-value pair "
-        "in xxx=yyy format will be merged into config file. If the value to "
-        'be overwritten is a list, it should be like key="[a,b]" or key=a,b '
-        'It also allows nested list/tuple values, e.g. key="[(a,b),(c,d)]" '
-        "Note that the quotation marks are necessary and that no white space "
-        "is allowed.",
+             "in xxx=yyy format will be merged into config file. If the value to "
+             'be overwritten is a list, it should be like key="[a,b]" or key=a,b '
+             'It also allows nested list/tuple values, e.g. key="[(a,b),(c,d)]" '
+             "Note that the quotation marks are necessary and that no white space "
+             "is allowed.",
     )
     parser.add_argument(
         "--launcher",
@@ -171,6 +172,15 @@ def main():
         cfg.model, train_cfg=cfg.get("train_cfg"), test_cfg=cfg.get("test_cfg")
     )
     model.init_weights()
+    # checkpoint_path = "work_dirs/faster_rcnn_obb_r50_fpn_1x_fair1m_5classes_few_shot_test_bb_input/epoch_100.pth"
+    # checkpoint_path = "work_dirs/faster_rcnn_obb_r50_fpn_1x_fair1m_semi_supervised_v3/iter_45000.pth"
+    # load_checkpoint(model, checkpoint_path, )
+    # torch.save(model.teacher.state_dict(), "teacher_45000.pth")
+    # torch.save(model.student.state_dict(), "student_45000.pth")
+    # exit()
+
+    # load_checkpoint(model.student, checkpoint_path, )
+    # load_checkpoint(model.teacher, checkpoint_path, )
 
     datasets = [build_dataset(cfg.data.train)]
     if len(cfg.workflow) == 2:
@@ -194,6 +204,7 @@ def main():
         timestamp=timestamp,
         meta=meta,
     )
+#
 
 
 if __name__ == "__main__":

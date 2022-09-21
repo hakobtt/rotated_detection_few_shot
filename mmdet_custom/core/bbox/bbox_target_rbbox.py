@@ -6,32 +6,30 @@ from .transforms_rbbox import dbbox2delta, delta2dbbox, \
 from ..utils import multi_apply
 
 
-def bbox_target_rbbox(
-        img,
-        pos_bboxes_list,
-        neg_bboxes_list,
-        pos_assigned_gt_inds_list,
-        gt_masks_list,
-        pos_gt_labels_list,
-        cfg,
-        reg_classes=1,
-        target_means=[.0, .0, .0, .0, .0],
-        target_stds=[1.0, 1.0, 1.0, 1.0, 1.0],
-        concat=True,
-        with_module=True,
-        hbb_trans='hbb2obb_v2'):
+def bbox_target_rbbox(img,
+                      pos_bboxes_list,
+                      neg_bboxes_list,
+                      pos_assigned_gt_inds_list,
+                      gt_masks_list,
+                      pos_gt_labels_list,
+                      cfg,
+                      reg_classes=1,
+                      target_means=[.0, .0, .0, .0, .0],
+                      target_stds=[1.0, 1.0, 1.0, 1.0, 1.0],
+                      concat=True,
+                      with_module=True,
+                      hbb_trans='hbb2obb_v2'):
     # import pdb
     # pdb.set_trace()
     labels, label_weights, bbox_targets, bbox_weights = multi_apply(
         bbox_target_rbbox_single,
+        img,
         pos_bboxes_list,
         neg_bboxes_list,
         pos_assigned_gt_inds_list,
         gt_masks_list,
         pos_gt_labels_list,
-        img,
         cfg=cfg,
-
         reg_classes=reg_classes,
         target_means=target_means,
         target_stds=target_stds,
@@ -47,14 +45,12 @@ def bbox_target_rbbox(
 
 
 def bbox_target_rbbox_single(
-
+        img,
         pos_bboxes,
         neg_bboxes,
         pos_assigned_gt_inds,
         gt_masks,
         pos_gt_labels,
-        img,
-
         cfg,
         reg_classes=1,
         target_means=[.0, .0, .0, .0, .0],
@@ -76,7 +72,6 @@ def bbox_target_rbbox_single(
     """
     # import pdb
     # pdb.set_trace()
-
     num_pos = pos_bboxes.size(0)
     num_neg = neg_bboxes.size(0)
     num_samples = num_pos + num_neg
@@ -84,19 +79,21 @@ def bbox_target_rbbox_single(
     label_weights = pos_bboxes.new_zeros(num_samples)
     bbox_targets = pos_bboxes.new_zeros(num_samples, 5)
     bbox_weights = pos_bboxes.new_zeros(num_samples, 5)
-
-    # pos_gt_masks = gt_masks[pos_assigned_gt_inds.cpu().numpy()]
-    # pos_gt_polys = mask2poly(pos_gt_masks)
-
-    pos_gt_polys = gt_masks[pos_assigned_gt_inds.cpu().numpy()].masks
-    pos_gt_polys = [p[0].reshape((4, 2)) for p in pos_gt_polys]
-
+    pos_gt_masks = gt_masks[pos_assigned_gt_inds.cpu().numpy()]
+    # TODO: optimizer it
+    pos_gt_polys = mask2poly(pos_gt_masks)
+    # if len(pos_gt_polys) == 0:
+    #     import pdb
+    #     pdb.set_trace()
+    # print('pos_gt_polys: ', pos_gt_polys)
     pos_gt_bp_polys = get_best_begin_point(pos_gt_polys)
-
+    # print('pos_gt_bp_polys: ', pos_gt_bp_polys)
+    # TODO optimizer it
+    # import pdb
+    # pdb.set_trace()
     pos_gt_obbs = torch.from_numpy(polygonToRotRectangle_batch(pos_gt_bp_polys, with_module)).to(pos_bboxes.device)
-    # pos_gt_obbs = gt_masks[pos_assigned_gt_inds.cpu().numpy()]
     show_data = False
-    if show_data:
+    if show_data and img is not None:
         mean = torch.tensor([123.675, 116.28, 103.53])
         std = torch.tensor([58.395, 57.12, 57.375])
         img1 = img.detach().cpu().permute((1, 2, 0)) * std + mean
@@ -106,16 +103,20 @@ def bbox_target_rbbox_single(
         img1 = cv2.cvtColor(img1, cv2.COLOR_BGR2RGB)
         polys = RotBox2Polys(pos_gt_obbs.cpu().numpy())
         color = (255, 0, 0)
-        for bbox in polys:
+        my_labels = pos_gt_labels.detach().cpu().numpy()
+        for bbox, label in zip(polys, my_labels):
             bbox = bbox.astype(int).flatten()
             for i in range(3):
                 cv2.line(img1, (bbox[i * 2], bbox[i * 2 + 1]), (bbox[(i + 1) * 2], bbox[(i + 1) * 2 + 1]), color=color,
                          thickness=2, lineType=cv2.LINE_AA)
             cv2.line(img1, (bbox[6], bbox[7]), (bbox[0], bbox[1]), color=color, thickness=2, lineType=cv2.LINE_AA)
+            class_names = ["airplane", "ship", "vehicle", "court", "road"]
+            # print(class_names[label - 1], label - 1)
+            cv2.putText(img1, class_names[label - 1], (bbox[0], bbox[1] + 10),
+                        color=(0, 255, 255), fontFace=cv2.FONT_HERSHEY_COMPLEX, fontScale=0.5)
 
         cv2.imshow("img1", img1)
         cv2.waitKey(0)
-
     # print('pos_gt_obbs: ', pos_gt_obbs)
     if pos_bboxes.size(1) == 4:
         # if hbb_trans == 'hbb2obb':

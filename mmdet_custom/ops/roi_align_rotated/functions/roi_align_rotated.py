@@ -1,6 +1,5 @@
 from torch.autograd import Function
 
-from .. import roi_align_rotated_cuda
 
 class RoIAlignRotatedFunction(Function):
 
