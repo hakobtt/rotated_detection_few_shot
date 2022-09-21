@@ -1,6 +1,6 @@
 from torch.autograd import Function
 
-from .. import riroi_align_cuda
+
 
 
 class RiRoIAlignFunction(Function):

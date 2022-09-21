@@ -1,6 +1,6 @@
 from torch.autograd import Function
 
-from .. import psroi_align_rotated_cuda
+
 
 class PSRoIAlignRotatedFunction(Function):
 

@@ -1,8 +1,6 @@
 import torch
 from torch.autograd import Function
 
-from .. import roi_pool_cuda
-
 
 class RoIPoolFunction(Function):
 

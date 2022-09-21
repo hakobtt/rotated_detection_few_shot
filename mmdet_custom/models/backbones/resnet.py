@@ -7,7 +7,7 @@ from torch.nn.modules.batchnorm import _BatchNorm
 from mmcv.cnn import constant_init, kaiming_init
 from mmcv.runner import load_checkpoint
 
-from mmdet_custom.ops import DeformConv, ModulatedDeformConv, ContextBlock
+
 from mmdet.models import BACKBONES
 from ..utils import build_conv_layer, build_norm_layer
 

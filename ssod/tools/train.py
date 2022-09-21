@@ -172,13 +172,12 @@ def main():
         cfg.model, train_cfg=cfg.get("train_cfg"), test_cfg=cfg.get("test_cfg")
     )
     model.init_weights()
-    checkpoint_path = "work_dirs/faster_rcnn_obb_r50_fpn_1x_fair1m_5classes_few_shot_test_bb_input/epoch_100.pth"
-    checkpoint_path = "work_dirs/faster_rcnn_obb_r50_fpn_1x_fair1m_semi_supervised_v3/iter_45000.pth"
-
-    load_checkpoint(model, checkpoint_path, )
-    torch.save(model.teacher.state_dict(), "teacher_45000.pth")
-    torch.save(model.student.state_dict(), "student_45000.pth")
-    exit()
+    # checkpoint_path = "work_dirs/faster_rcnn_obb_r50_fpn_1x_fair1m_5classes_few_shot_test_bb_input/epoch_100.pth"
+    # checkpoint_path = "work_dirs/faster_rcnn_obb_r50_fpn_1x_fair1m_semi_supervised_v3/iter_45000.pth"
+    # load_checkpoint(model, checkpoint_path, )
+    # torch.save(model.teacher.state_dict(), "teacher_45000.pth")
+    # torch.save(model.student.state_dict(), "student_45000.pth")
+    # exit()
 
     # load_checkpoint(model.student, checkpoint_path, )
     # load_checkpoint(model.teacher, checkpoint_path, )
