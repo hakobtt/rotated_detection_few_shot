@@ -224,7 +224,7 @@ data = dict(
     ),
     test=dict(
         type=dataset_type,
-        ann_file=data_root + f'val{tile_side_len}/filtered_500.json',
+        ann_file=data_root + f'val{tile_side_len}/filtered_50.json',
         img_prefix=data_root + f'val{tile_side_len}/images',
         pipeline=test_pipeline,
     ))
