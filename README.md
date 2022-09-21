@@ -25,7 +25,7 @@ pip install openmim
 mim install mmcv-full==1.4.8 
 ```
 
-(I did not really have time to fit this all in the setup.py)
+(Sorry for not including those in setup.py)
 
 You might still need to install several other dependencies.
 
