@@ -4,8 +4,10 @@
 
 (The word dirty is quite soft for this repo so be ready -_-)
 
+### Install
 
-- 
+- install local libs
+
 ```shell
 pip install -e .
 ```
