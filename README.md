@@ -1,8 +1,5 @@
 ## Redet SSD
 
-(Writing several lines here in order to help to get it working)
-
-(The word dirty is quite soft for this repo so be ready -_-)
 
 ### Install
 
