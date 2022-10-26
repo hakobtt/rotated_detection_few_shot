@@ -9,7 +9,7 @@
 pip install -e .
 ```
 
-- install pytorch. I recommend using version 1.11.0
+- install pytorch. It's recommend using version 1.11.0
 
 - install mmdetection in the repo
 ```shell
@@ -18,15 +18,11 @@ pip install -e .
 ```
 
 - install mmcv-full.
-I recommend using pytorch 1.11.0 and installing mmcv-full with openmim so you don't have to wait for it to be built
+It's recommend using pytorch 1.11.0 and installing mmcv-full with openmim so you don't have to wait for it to be built
 ```shell
 pip install openmim
 mim install mmcv-full==1.4.8 
 ```
-
-(Sorry for not including those in setup.py)
-
-You might still need to install several other dependencies.
 
 
 ---
