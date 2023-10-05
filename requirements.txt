@@ -4,6 +4,6 @@ shapely
 tqdm
 matplotlib
 pycocotools
-pillow==6.2.2
+pillow
 prettytable
 tensorboard
